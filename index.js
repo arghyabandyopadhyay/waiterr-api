@@ -12,6 +12,7 @@ const port = 3000;
 
 
 const userDetailsRouter = require("./routes/userDetails");
+const userClientAllocationRouter = require("./routes/userClientAllocation");
 const runningOrderRouter = require("./routes/runningOrder");
 const indexRouter = require('./routes/router.js');
 
@@ -36,6 +37,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/userdetails", userDetailsRouter);
+app.use("/api/userClientAllocation", userClientAllocationRouter);
 app.use("/api/runningOrder", runningOrderRouter);
 app.use("/api/app", indexRouter);
 
