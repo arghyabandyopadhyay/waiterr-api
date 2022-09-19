@@ -1,12 +1,32 @@
 const db = require("./db");
 const helper = require("../helper");
 
-async function get(id) {
+async function get(userId) {
   result = await db.query(
-    `SELECT * FROM UserClientAllocation WHERE id='${id}'`
+    `SELECT UserClientAllocation.id, GUID, CompanyGUID, OutletName, OutletSalePoint, ClientName, LogoUrl, DataExchangeVia, DataExchangeUrl FROM UserClientAllocation LEFT JOIN Clients ON UserClientAllocation.GUID = Clients.id WHERE UserId='${userId}'`
   );
   const data = helper.emptyOrRows(result);
-  if(data.length>0)return {statusCode:200,body:data[0]};
+  
+  if(data.length>0){
+    var groupBy = function(xs, key) {
+      return xs.reduce(function(rv, x) {
+        (rv[x[key]] = rv[x[key]] || []).push(x);
+        return rv;
+      }, {});
+    };
+    var groupedByGUID = groupBy(data, 'GUID')
+    console.log(groupedByGUID);
+
+
+    const outletConfiguration=[];
+    data.forEach(element => {
+      outletConfiguration.push({OutletName:element.OutletName,OutletSalePoint:element.OutletSalePoint});
+    });
+    data[0]['outletConfiguration']=outletConfiguration;
+    delete data[0].OutletName;
+    delete data[0].OutletSalePoint;
+    return {statusCode:200,body:data};
+  }
   else return{statusCode:204,body:""};
 }
 
