@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const userClientAllocation = require("../services/userClientAllocation");
 const jwt = require('jsonwebtoken');
-const config=require('../config/config')
+const config=require('../config/config');
 /* GET user client allocation data. */
 
 router.get("/", async function (req, res, next) {
