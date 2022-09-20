@@ -1,13 +1,34 @@
 const db = require("./db");
 const helper = require("../helper");
 
-async function get(id) {
+async function get(guid) {
   const result = await db.query(
-    `SELECT * FROM RunningOrder WHERE id='${id}'`
+    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id WHERE ClientId='${guid}'`
   );
   const data = helper.emptyOrRows(result);
 
-  return data[0];
+  if(data.length>0)return data;
+  else return ;
+}
+
+async function get1(guid,waiterId) {
+  const result = await db.query(
+    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id WHERE ClientId='${guid}' AND WaiterId='${waiterId}'`
+  );
+  const data = helper.emptyOrRows(result);
+
+  if(data.length>0)return data;
+  else return ;
+}
+
+async function get2(guid,outlet,salePointName,salePointType) {
+  const result = await db.query(
+    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id WHERE ClientId='${guid}' AND OutletName='${outlet}' AND SalePointType='${salePointType}' AND SalePointName='${salePointName}'`
+  );
+  const data = helper.emptyOrRows(result);
+
+  if(data.length>0)return data;
+  else return ;
 }
 
 async function create(runningOrder) {
@@ -69,6 +90,8 @@ async function remove(id) {
 
 module.exports = {
   get,
+  get1,
+  get2,
   create,
   update,
   remove,
