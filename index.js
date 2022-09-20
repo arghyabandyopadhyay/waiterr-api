@@ -38,7 +38,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/userdetails", userDetailsRouter);
 app.use("/api/userClientAllocation", userClientAllocationRouter);
-app.use("/api/runningOrder", runningOrderRouter);
+app.use("/api/master", runningOrderRouter);
 app.use("/api/app", indexRouter);
 
 /* Error handler middleware */
