@@ -3,7 +3,7 @@ const helper = require("../helper");
 
 async function get(userId) {
   result = await db.query(
-    `SELECT UserClientAllocation.id, GUID, CompanyGUID, OutletName, OutletSalePoint, ClientName, LogoUrl, DataExchangeVia, DataExchangeUrl FROM UserClientAllocation LEFT JOIN Clients ON UserClientAllocation.GUID = Clients.id WHERE UserId='${userId}'`
+    `SELECT GUID, CompanyGUID, OutletName, OutletSalePoint, ClientName, LogoUrl, DataExchangeVia, DataExchangeUrl FROM UserClientAllocation LEFT JOIN Clients ON UserClientAllocation.GUID = Clients.id WHERE UserId='${userId}'`
   );
   const data = helper.emptyOrRows(result);
   
@@ -14,18 +14,20 @@ async function get(userId) {
         return rv;
       }, {});
     };
-    var groupedByGUID = groupBy(data, 'GUID')
-    console.log(groupedByGUID);
+    var groupedByGUID = groupBy(data, 'GUID');
+    var resultJson=[];
+    for(var key in groupedByGUID){
+      const outletConfiguration=[];
+      groupedByGUID[key].forEach(element => {
+        outletConfiguration.push({OutletName:element.OutletName,OutletSalePoint:element.OutletSalePoint});
+      });
+      groupedByGUID[key][0]['outletConfiguration']=outletConfiguration;
+      delete groupedByGUID[key][0].OutletName;
+      delete groupedByGUID[key][0].OutletSalePoint;
+      resultJson.push(groupedByGUID[key][0]);
+    }
 
-
-    const outletConfiguration=[];
-    data.forEach(element => {
-      outletConfiguration.push({OutletName:element.OutletName,OutletSalePoint:element.OutletSalePoint});
-    });
-    data[0]['outletConfiguration']=outletConfiguration;
-    delete data[0].OutletName;
-    delete data[0].OutletSalePoint;
-    return {statusCode:200,body:data};
+    return {statusCode:200,body:resultJson};
   }
   else return{statusCode:204,body:""};
 }
