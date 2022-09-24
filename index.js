@@ -13,8 +13,9 @@ const port = 3000;
 
 const userDetailsRouter = require("./routes/userDetails");
 const userClientAllocationRouter = require("./routes/userClientAllocation");
-const runningOrderRouter = require("./routes/runningOrder");
-const indexRouter = require('./routes/router.js');
+const masterRouter = require("./routes/masterAPI");
+const indexRouter = require('./routes/router');
+const customerBankRouter=require('./routes/customerBank');
 
 app.use(express.json());
 app.use(bodyParser.json());
@@ -30,15 +31,16 @@ app.use(bodyParser.urlencoded({
 
 app.use(cors());
 
-app.use('/api', indexRouter);
+// app.use('/api', indexRouter);
 
-app.get("/", (req, res) => {
-  res.json({ message: "ok" });
-});
+// app.get("/", (req, res) => {
+//   res.json({ message: "ok" });
+// });
 
 app.use("/api/userdetails", userDetailsRouter);
+app.use("/api/customerBank", customerBankRouter);
 app.use("/api/userClientAllocation", userClientAllocationRouter);
-app.use("/api/master", runningOrderRouter);
+app.use("/api/master", masterRouter);
 app.use("/api/app", indexRouter);
 
 /* Error handler middleware */
