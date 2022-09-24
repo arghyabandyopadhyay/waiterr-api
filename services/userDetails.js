@@ -29,7 +29,6 @@ async function create(userDetails) {
     statusCode=500;
     if (result.affectedRows) {
       let userDetailData=await getUsingMobileNo(userDetails.MobileNumber);
-      console.log(userDetailData['id']);
       await db.query(
         `UPDATE Users SET UID='${userDetailData['id']}' WHERE id = ${userDetails.id}`
       );
@@ -40,7 +39,6 @@ async function create(userDetails) {
     message=err.message;
     statusCode=403;
   }
-  console.log({statusCode:statusCode,body:message});
   return {statusCode:statusCode,body:message};
 }
 
