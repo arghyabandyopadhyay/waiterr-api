@@ -1,9 +1,10 @@
 const db = require("./db");
 const helper = require("../helper");
 
+
 async function get(guid) {
   const result = await db.query(
-    `SELECT * FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id WHERE MenuItem.ClientId='${guid}'`
+    `SELECT MenuItem.id,ItemImage,Item,ItemDescription,CommentForKOT,MenuGroup.id as StockGroupId,RateBeforeDiscount,Discount,Rate,TaxClassId,IsDiscountable,IsVeg,TaxRate,Tags,Price,MenuItem.ClientId,Favourite,ImageUrl,StockGroup FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id WHERE MenuItem.ClientId='${guid}'`
   );
   const data = helper.emptyOrRows(result);
 
