@@ -5,6 +5,8 @@ const jwt = require('jsonwebtoken');
 const runningOrder = require("../services/runningOrder");
 const waiterrMenu=require("../services/waiterrMenu");
 const waiterrMenuGroup=require("../services/waiterrMenuGroup");
+const maxTakeAway=require("../services/maxTakeAway");
+const orders=require("../services/orders");
 const config=require('../config/config');
 const { json } = require("body-parser");
 
@@ -92,6 +94,21 @@ const theToken = req.headers.authorization.split(' ')[1];
     }
     else if(requestJson.RequestType=="Waiterr Menu Group"){
       res.json(await waiterrMenuGroup.get(req.body.GUID));
+    }
+    else if(requestJson.RequestType=="Place Order"){
+      const responseBody=(JSON.parse(requestJson.RequestBody));
+      const lastId=await runningOrder.create(responseBody,req.body.GUID);
+      const result=await orders.create(responseBody.menuList,lastId.message,req.body.GUID);
+      res.status(result['statusCode']).json(result['message']);
+    }
+    else if(requestJson.RequestType=="Max TakeAway"){
+      const parameterList=requestJson.ParameterList;
+        var outlet,date;
+        parameterList.forEach(element => {
+          if(element.P_Key=='outlet')outlet=element.P_Value;
+          else if(element.P_Key=='date')date=element.P_Value;
+        });
+        res.json(await maxTakeAway.get(outlet,date));
     }
 
     // res.json(await runningOrder.create(req.body));
