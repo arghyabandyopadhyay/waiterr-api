@@ -31,18 +31,24 @@ async function get2(guid,outlet,salePointName,salePointType) {
   else return ;
 }
 
-async function create(runningOrder) {
+async function create(runningOrder,guid) {
+  let amount=0;
+  for(var menuListVal of runningOrder.menuList){
+    amount+=(menuListVal.Rate*menuListVal.Quantity)*(1+menuListVal.TaxRate*0.01)
+  }
+  console.log(amount);
   const result = await db.query(
     `INSERT INTO RunningOrder 
-    (Name,MobileNo,SalePointType,SalePointName,WaiterName,Amount,PAX,BillPrinted,OutletName)
+    (Name,MobileNo,SalePointType,SalePointName,WaiterId,Amount,PAX,BillPrinted,OutletName,ClientId)
     VALUES 
-    ('${runningOrder.Name}' ,'${runningOrder.MobileNo}' ,'${runningOrder.SalePointType}' ,'${runningOrder.SalePointName}','${runningOrder.WaiterName}','${runningOrder.Amount}',${runningOrder.PAX},${runningOrder.BillPrinted},'${runningOrder.OutletName}');`
+    (?,?,?,?,?,?,?,?,?,?);`,[runningOrder.CustomerName,runningOrder.MobileNumber,runningOrder.SalePointType,runningOrder.SalePointName,runningOrder.WaiterId,amount,runningOrder.PAX,0,runningOrder.OutletName,guid]
   );
 
   let message = "Error in creating running order";
 
   if (result.affectedRows) {
-    message = "Running order created successfully";
+    const lastId=await db.query('SELECT @last_uuid;');
+    message = lastId[0]['@last_uuid'];
   }
 
   return { message };
