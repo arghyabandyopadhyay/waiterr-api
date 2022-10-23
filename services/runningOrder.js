@@ -36,7 +36,6 @@ async function create(runningOrder,guid) {
   for(var menuListVal of runningOrder.menuList){
     amount+=(menuListVal.Rate*menuListVal.Quantity)*(1+menuListVal.TaxRate*0.01)
   }
-  console.log(amount);
   const result = await db.query(
     `INSERT INTO RunningOrder 
     (Name,MobileNo,SalePointType,SalePointName,WaiterId,Amount,PAX,BillPrinted,OutletName,ClientId)
