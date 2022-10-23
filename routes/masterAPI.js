@@ -7,6 +7,7 @@ const waiterrMenu=require("../services/waiterrMenu");
 const waiterrMenuGroup=require("../services/waiterrMenuGroup");
 const maxTakeAway=require("../services/maxTakeAway");
 const commentForKotSuggestions=require("../services/commentForKotSuggestions");
+const salePointHistory=require("../services/salePointHistory");
 const orders=require("../services/orders");
 const config=require('../config/config');
 const { json } = require("body-parser");
@@ -59,7 +60,7 @@ const theToken = req.headers.authorization.split(' ')[1];
         parameterList.forEach(element => {
           if(element.P_Key=='WaiterId')waiterId=element.P_Value;
         });
-        res.json(await runningOrder.get1(req.body.GUID,waiterId));
+        res.json(await runningOrder.getForWaiterId(waiterId));
       }
     }
     else if(requestJson.RequestType=="Active Sale Point"){
@@ -76,7 +77,7 @@ const theToken = req.headers.authorization.split(' ')[1];
           else if(element.P_Key=='SalePointName')salePointName=element.P_Value;
           else if(element.P_Key=='SalePointType')salePointType=element.P_Value;
         });
-        res.json(await runningOrder.get2(req.body.GUID,outlet,salePointName,salePointType));
+        res.json(await runningOrder.getForAddOrder(req.body.GUID,outlet,salePointName,salePointType));
       }
     }
     else if(requestJson.RequestType=="Waiterr Menu"){
@@ -99,7 +100,7 @@ const theToken = req.headers.authorization.split(' ')[1];
     else if(requestJson.RequestType=="Place Order"){
       const responseBody=(JSON.parse(requestJson.RequestBody));
       const lastId=await runningOrder.create(responseBody,req.body.GUID);
-      const result=await orders.create(responseBody.menuList,lastId.message,req.body.GUID);
+      const result=await orders.create(responseBody.menuList,lastId.message,lastId.kotNumber,req.body.GUID);
       if(result['statusCode']==200&&responseBody.SalePointType=="TAKE-AWAY"){
         await maxTakeAway.updateLastTakeAway(parseInt(responseBody.SalePointName),responseBody.OutletId);
       }
@@ -123,52 +124,21 @@ const theToken = req.headers.authorization.split(' ')[1];
         const result=await commentForKotSuggestions.getUsingMenuItemId(menuItemId);
       res.status(result['statusCode']).json(result['body']);
     }
+    else if(requestJson.RequestType=="Sale Point History"){
+      const parameterList=requestJson.ParameterList;
+        var salePointType, salePointName, outletId;
+        parameterList.forEach(element => {
+          if(element.P_Key=='SalePointType')salePointType=element.P_Value;
+          else if(element.P_Key=='SalePointName')salePointName=element.P_Value;
+          else if(element.P_Key=='OutletId')outletId=element.P_Value;
+        });
+        const result=await salePointHistory.get(salePointType,salePointName,outletId);
+      res.status(result['statusCode']).json(result['body']);
+    }
 
     // res.json(await runningOrder.create(req.body));
   } catch (err) {
     console.log(err);
-    res.status(401).json({message:'Unauthorised Access'});
-  }
-});
-
-/* PUT user details */
-router.put("/", async function (req, res, next) {
-  if(
-    !req.headers.authorization ||
-    !req.headers.authorization.startsWith('Bearer') ||
-    !req.headers.authorization.split(' ')[1]
-  ){
-    return res.status(422).json({
-        message: "Please provide the token",
-    });
-  }
-
-const theToken = req.headers.authorization.split(' ')[1];
-  try {
-    jwt.verify(theToken, config.secretCode);
-    res.json(await runningOrder.update(req.query.id, req.body));
-  } catch (err) {
-    res.status(401).json({message:'Unauthorised Access'});
-  }
-});
-
-/* DELETE user details */
-router.delete("/", async function (req, res, next) {
-  if(
-    !req.headers.authorization ||
-    !req.headers.authorization.startsWith('Bearer') ||
-    !req.headers.authorization.split(' ')[1]
-  ){
-    return res.status(422).json({
-        message: "Please provide the token",
-    });
-  }
-
-const theToken = req.headers.authorization.split(' ')[1];
-  try {
-    jwt.verify(theToken, config.secretCode);
-    res.json(await runningOrder.remove(req.query.id));
-  } catch (err) {
     res.status(401).json({message:'Unauthorised Access'});
   }
 });
