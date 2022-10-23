@@ -3,7 +3,7 @@ const helper = require("../helper");
 
 async function get(userId) {
   result = await db.query(
-    `SELECT GUID, CompanyGUID, OutletName, OutletSalePoint, ClientName, LogoUrl, DataExchangeVia, DataExchangeUrl FROM UserClientAllocation LEFT JOIN Clients ON UserClientAllocation.GUID = Clients.id WHERE UserId='${userId}'`
+    `SELECT UserClientAllocation.id, GUID, CompanyGUID, OutletName, OutletSalePoint, ClientName, LogoUrl, DataExchangeVia, DataExchangeUrl FROM UserClientAllocation LEFT JOIN Clients ON UserClientAllocation.GUID = Clients.id WHERE UserId='${userId}'`
   );
   const data = helper.emptyOrRows(result);
   
@@ -19,7 +19,7 @@ async function get(userId) {
     for(var key in groupedByGUID){
       const outletConfiguration=[];
       groupedByGUID[key].forEach(element => {
-        outletConfiguration.push({OutletName:element.OutletName,OutletSalePoint:element.OutletSalePoint});
+        outletConfiguration.push({id:element.id, OutletName:element.OutletName,OutletSalePoint:element.OutletSalePoint});
       });
       groupedByGUID[key][0]['outletConfiguration']=outletConfiguration;
       delete groupedByGUID[key][0].OutletName;
