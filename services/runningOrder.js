@@ -3,7 +3,7 @@ const helper = require("../helper");
 
 async function get(guid) {
   const result = await db.query(
-    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id WHERE ClientId='${guid}'`
+    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, OutletId, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id LEFT JOIN UserClientAllocation ON RunningOrder.OutletId=UserClientAllocation.id WHERE ClientId='${guid}' ORDER BY ActiveSince Desc`
   );
   const data = helper.emptyOrRows(result);
 
@@ -11,9 +11,9 @@ async function get(guid) {
   else return ;
 }
 
-async function get1(guid,waiterId) {
+async function getForWaiterId(waiterId) {
   const result = await db.query(
-    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id WHERE ClientId='${guid}' AND WaiterId='${waiterId}'`
+    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, OutletId, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id LEFT JOIN UserClientAllocation ON RunningOrder.OutletId=UserClientAllocation.id WHERE WaiterId=? ORDER BY ActiveSince Desc`,[waiterId]
   );
   const data = helper.emptyOrRows(result);
 
@@ -21,36 +21,58 @@ async function get1(guid,waiterId) {
   else return ;
 }
 
-async function get2(guid,outlet,salePointName,salePointType) {
+async function getForAddOrder(guid,outlet,salePointName,salePointType) {
   const result = await db.query(
-    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id WHERE ClientId='${guid}' AND OutletName='${outlet}' AND SalePointType='${salePointType}' AND SalePointName='${salePointName}'`
+    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, OutletId, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName, KotNumbers FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id LEFT JOIN UserClientAllocation ON RunningOrder.OutletId=UserClientAllocation.id WHERE ClientId=? AND OutletName=? AND SalePointType=? AND SalePointName=?`,[guid,outlet,salePointType,salePointName]
   );
   const data = helper.emptyOrRows(result);
-
   if(data.length>0)return data;
-  else return ;
+  else return [];
 }
 
 async function create(runningOrder,guid) {
-  let amount=0;
-  for(var menuListVal of runningOrder.menuList){
-    amount+=(menuListVal.Rate*menuListVal.Quantity)*(1+menuListVal.TaxRate*0.01)
+  const isAlreadyAnActiveTable=await getForAddOrder(guid,runningOrder.OutletName,runningOrder.SalePointName,runningOrder.SalePointType);
+
+  if(isAlreadyAnActiveTable==null||isAlreadyAnActiveTable.length==0){
+    let amount=0;
+    for(var menuListVal of runningOrder.menuList){
+      amount+=(menuListVal.Rate*menuListVal.Quantity)*(1+menuListVal.TaxRate*0.01)
+    }
+    const result = await db.query(
+      `INSERT INTO RunningOrder 
+      (Name,MobileNo,SalePointType,SalePointName,WaiterId,Amount,PAX,BillPrinted,OutletId,ClientId)
+      VALUES 
+      (?,?,?,?,?,?,?,?,?,?);`,[runningOrder.CustomerName,runningOrder.MobileNumber,runningOrder.SalePointType,runningOrder.SalePointName,runningOrder.WaiterId,amount,runningOrder.PAX,0,runningOrder.OutletId,guid]
+    );
+
+    let message = "Error in creating running order";
+
+    if (result.affectedRows) {
+      const lastId=await db.query('SELECT @last_uuid;');
+      message = lastId[0]['@last_uuid'];
+    }
+    return { message };
   }
-  const result = await db.query(
-    `INSERT INTO RunningOrder 
-    (Name,MobileNo,SalePointType,SalePointName,WaiterId,Amount,PAX,BillPrinted,OutletName,ClientId)
-    VALUES 
-    (?,?,?,?,?,?,?,?,?,?);`,[runningOrder.CustomerName,runningOrder.MobileNumber,runningOrder.SalePointType,runningOrder.SalePointName,runningOrder.WaiterId,amount,runningOrder.PAX,0,runningOrder.OutletName,guid]
-  );
+  else{
+    let amount=0;
+    for(var menuListVal of runningOrder.menuList){
+      amount+=(menuListVal.Rate*menuListVal.Quantity)*(1+menuListVal.TaxRate*0.01)
+    }
+    var activeTable=isAlreadyAnActiveTable[0];
+    var lastKotNumber=parseInt(activeTable.KotNumbers.split(',').slice(-1));
+    var kotNumber=lastKotNumber+1;
+    activeTable.KotNumbers=activeTable.KotNumbers+","+(kotNumber);
+    activeTable.Amount+=amount;
+    let res=await update(activeTable.id,activeTable);
+    let message = "Error in creating running order";
 
-  let message = "Error in creating running order";
+    if (res['message']=="User Details updated successfully") {
+      message = activeTable.id;
+    }
 
-  if (result.affectedRows) {
-    const lastId=await db.query('SELECT @last_uuid;');
-    message = lastId[0]['@last_uuid'];
+    return { message, kotNumber };
   }
-
-  return { message };
+  
 }
 
 async function update(id, runningOrder) {
@@ -61,12 +83,11 @@ async function update(id, runningOrder) {
     MobileNo= '${runningOrder.MobileNo}' ,
     SalePointType= '${runningOrder.SalePointType}' ,
     SalePointName= '${runningOrder.SalePointName}',
-    WaiterName= '${runningOrder.WaiterName}',
     Amount= '${runningOrder.Amount}',
     PAX= ${runningOrder.PAX},
-    ActiveSince= '${runningOrder.ActiveSince}',
     BillPrinted= ${runningOrder.BillPrinted},
-    OutletName= '${runningOrder.OutletName}'
+    OutletId= '${runningOrder.OutletId}',
+    KotNumbers= '${runningOrder.KotNumbers}'
     WHERE id = '${id}'`
   );
 
@@ -95,8 +116,8 @@ async function remove(id) {
 
 module.exports = {
   get,
-  get1,
-  get2,
+  getForWaiterId,
+  getForAddOrder,
   create,
   update,
   remove,
