@@ -6,6 +6,7 @@ const runningOrder = require("../services/runningOrder");
 const waiterrMenu=require("../services/waiterrMenu");
 const waiterrMenuGroup=require("../services/waiterrMenuGroup");
 const maxTakeAway=require("../services/maxTakeAway");
+const commentForKotSuggestions=require("../services/commentForKotSuggestions");
 const orders=require("../services/orders");
 const config=require('../config/config');
 const { json } = require("body-parser");
@@ -84,12 +85,12 @@ const theToken = req.headers.authorization.split(' ')[1];
       }
       else{
         const parameterList=requestJson.ParameterList;
-        var clientMobile;
+        var clientMobile,restaurantId;
         parameterList.forEach(element => {
           if(element.P_Key=='clientMobile')clientMobile=element.P_Value;
+          else if(element.P_Key=='restaurantId')restaurantId=element.P_Value;
         });
-        // res.json(await waiterrMenu.get2(req.body.GUID,clientMobile));
-        res.json(await waiterrMenu.get(req.body.GUID));
+        res.json(await waiterrMenu.get(req.body.GUID,restaurantId));
       }
     }
     else if(requestJson.RequestType=="Waiterr Menu Group"){
@@ -99,16 +100,28 @@ const theToken = req.headers.authorization.split(' ')[1];
       const responseBody=(JSON.parse(requestJson.RequestBody));
       const lastId=await runningOrder.create(responseBody,req.body.GUID);
       const result=await orders.create(responseBody.menuList,lastId.message,req.body.GUID);
+      if(result['statusCode']==200&&responseBody.SalePointType=="TAKE-AWAY"){
+        await maxTakeAway.updateLastTakeAway(parseInt(responseBody.SalePointName),responseBody.OutletId);
+      }
       res.status(result['statusCode']).json(result['message']);
     }
     else if(requestJson.RequestType=="Max TakeAway"){
       const parameterList=requestJson.ParameterList;
-        var outlet,date;
+        var outletId,date;
         parameterList.forEach(element => {
-          if(element.P_Key=='outlet')outlet=element.P_Value;
-          else if(element.P_Key=='date')date=element.P_Value;
+          if(element.P_Key=='outletId')outletId=element.P_Value;
+          else if(element.P_Key=='currentDate')date=element.P_Value;
         });
-        res.json(await maxTakeAway.get(outlet,date));
+        res.json(await maxTakeAway.getLastTakeAway(outletId,date));
+    }
+    else if(requestJson.RequestType=="Comment For KOT"){
+      const parameterList=requestJson.ParameterList;
+        var menuItemId;
+        parameterList.forEach(element => {
+          if(element.P_Key=='menuItemId')menuItemId=element.P_Value;
+        });
+        const result=await commentForKotSuggestions.getUsingMenuItemId(menuItemId);
+      res.status(result['statusCode']).json(result['body']);
     }
 
     // res.json(await runningOrder.create(req.body));
