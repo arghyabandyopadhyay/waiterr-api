@@ -2,6 +2,7 @@ const db = require("./db");
 const helper = require("../helper");
 const mysql = require("mysql2/promise");
 const config = require("../config/config");
+const commentForKotSuggestions=require("../services/commentForKotSuggestions");
 
 async function create(menuList,runningOrderId,guid) {
   let message,statusCode;
@@ -13,13 +14,17 @@ async function create(menuList,runningOrderId,guid) {
           await connection.query('START TRANSACTION');
           for(var menuListVal of menuList){
             await connection.query('INSERT INTO Orders (ItemId,Quantity,CommentForKOT,runningOrderId,clientId) VALUES (?,?,?,?,?)', [
-              menuListVal.ItemID, menuListVal.Quantity, menuListVal.CommentForKOT, runningOrderId, guid]);
+              menuListVal.ItemID, menuListVal.Quantity, menuListVal.CommentForKOT,  runningOrderId, guid]);
+            if(menuListVal.CommentForKOTId==null){
+              await commentForKotSuggestions.create({comment:menuListVal.CommentForKOT,menuItemId:menuListVal.ItemID});
+            }
           }
           await connection.commit();
           connection.release();
           message = 'success';
           statusCode=200;
       } catch (error) {
+        print(error);
         message = "Error in creating order";
         statusCode=403;
         connection.release();
