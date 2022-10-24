@@ -3,10 +3,10 @@ const helper = require("../helper");
 
 async function get(userId) {
   result = await db.query(
-    `SELECT UserClientAllocation.id, GUID, CompanyGUID, OutletName, OutletSalePoint, ClientName, LogoUrl, DataExchangeVia, DataExchangeUrl FROM UserClientAllocation LEFT JOIN Clients ON UserClientAllocation.GUID = Clients.id WHERE UserId='${userId}'`
+    `SELECT Outlets.id, GUID, CompanyGUID, OutletName, OutletSalePoint, ClientName, LogoUrl, DataExchangeVia, DataExchangeUrl FROM UserClientAllocation  LEFT JOIN Outlets ON UserClientAllocation.OutletId=Outlets.id LEFT JOIN Clients ON Outlets.GUID = Clients.id WHERE UserId='${userId}'`
   );
   const data = helper.emptyOrRows(result);
-  
+  console.log(data)
   if(data.length>0){
     var groupBy = function(xs, key) {
       return xs.reduce(function(rv, x) {
