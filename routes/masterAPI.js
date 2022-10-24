@@ -56,11 +56,21 @@ const theToken = req.headers.authorization.split(' ')[1];
       }
       else{
         const parameterList=requestJson.ParameterList;
-        var waiterId;
-        parameterList.forEach(element => {
-          if(element.P_Key=='WaiterId')waiterId=element.P_Value;
-        });
-        res.json(await runningOrder.getForWaiterId(waiterId));
+        if(parameterList.length==1){
+          var waiterId;
+          parameterList.forEach(element => {
+            if(element.P_Key=='WaiterId')waiterId=element.P_Value;
+          });
+          res.json(await runningOrder.getForWaiterId(waiterId));
+        }
+        else if(parameterList.length==2){
+          var runningOrderId, terminate;
+          parameterList.forEach(element=>{
+            if(element.P_Key=='Terminate')terminate=element.P_Value;
+            else if(element.P_Key=='RunningOrderId')runningOrderId=element.P_Value;
+          })
+          res.json(await runningOrder.terminate(runningOrderId));
+        }
       }
     }
     else if(requestJson.RequestType=="Active Sale Point"){
@@ -126,14 +136,44 @@ const theToken = req.headers.authorization.split(' ')[1];
     }
     else if(requestJson.RequestType=="Sale Point History"){
       const parameterList=requestJson.ParameterList;
-        var salePointType, salePointName, outletId;
+      if(parameterList!=null){
+        if(parameterList.length==3){
+          var salePointType, salePointName, outletId;
+          parameterList.forEach(element => {
+            if(element.P_Key=='SalePointType')salePointType=element.P_Value;
+            else if(element.P_Key=='SalePointName')salePointName=element.P_Value;
+            else if(element.P_Key=='OutletId')outletId=element.P_Value;
+          });
+          const result=await salePointHistory.get(salePointType,salePointName,outletId);
+          res.status(result['statusCode']).json(result['body']);
+        }
+        else if(parameterList.length==1){
+          var approvalType;
+          parameterList.forEach(element => {
+            if(element.P_Key=='ApprovalType')approvalType=element.P_Value;
+          });
+
+          const result=await salePointHistory.getForApproval(approvalType,req.body.GUID);
+          res.status(result['statusCode']).json(result['body']);
+        }
+      }
+      else{
+        
+      }
+    }
+    else if(requestJson.RequestType=="Order Approval"){
+      const parameterList=requestJson.ParameterList;
+        var forApproval, forAggregate, runningOrderId, kotNumber,approvalType,allProcessed;
         parameterList.forEach(element => {
-          if(element.P_Key=='SalePointType')salePointType=element.P_Value;
-          else if(element.P_Key=='SalePointName')salePointName=element.P_Value;
-          else if(element.P_Key=='OutletId')outletId=element.P_Value;
+          if(element.P_Key=='ForApproval')forApproval=element.P_Value;
+          else if(element.P_Key=="ForAggregate")forAggregate=element.P_Value;
+          else if(element.P_Key=='RunningOrderId')runningOrderId=element.P_Value;
+          else if(element.P_Key=='KotNumber')kotNumber=element.P_Value;
+          else if(element.P_Key=='ApprovalType')approvalType=element.P_Value;
+          else if(element.P_Key=='AllProcessed')allProcessed=element.P_Value;
         });
-        const result=await salePointHistory.get(salePointType,salePointName,outletId);
-      res.status(result['statusCode']).json(result['body']);
+        const result=await salePointHistory.approveOrders(forApproval,forAggregate,runningOrderId,req.body.GUID,kotNumber,approvalType,allProcessed);
+        res.status(result['statusCode']).json(result['message']);
     }
 
     // res.json(await runningOrder.create(req.body));
