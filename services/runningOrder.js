@@ -3,7 +3,7 @@ const helper = require("../helper");
 
 async function get(guid) {
   const result = await db.query(
-    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, OutletId, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id LEFT JOIN UserClientAllocation ON RunningOrder.OutletId=UserClientAllocation.id WHERE ClientId='${guid}' ORDER BY ActiveSince Desc`
+    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, OutletId, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id LEFT JOIN Outlets ON RunningOrder.OutletId=Outlets.id WHERE ClientId='${guid}' AND isTerminated=0 ORDER BY ActiveSince Desc`
   );
   const data = helper.emptyOrRows(result);
 
@@ -13,7 +13,7 @@ async function get(guid) {
 
 async function getForWaiterId(waiterId) {
   const result = await db.query(
-    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, OutletId, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id LEFT JOIN UserClientAllocation ON RunningOrder.OutletId=UserClientAllocation.id WHERE WaiterId=? ORDER BY ActiveSince Desc`,[waiterId]
+    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, OutletId, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id LEFT JOIN Outlets ON RunningOrder.OutletId=Outlets.id WHERE WaiterId=? AND isTerminated=0 ORDER BY ActiveSince Desc`,[waiterId]
   );
   const data = helper.emptyOrRows(result);
 
@@ -23,7 +23,7 @@ async function getForWaiterId(waiterId) {
 
 async function getForAddOrder(guid,outlet,salePointName,salePointType) {
   const result = await db.query(
-    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, OutletId, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName, KotNumbers FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id LEFT JOIN UserClientAllocation ON RunningOrder.OutletId=UserClientAllocation.id WHERE ClientId=? AND OutletName=? AND SalePointType=? AND SalePointName=?`,[guid,outlet,salePointType,salePointName]
+    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, OutletId, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName, KotNumbers FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id LEFT JOIN Outlets ON RunningOrder.OutletId=Outlets.id WHERE ClientId=? AND OutletName=? AND SalePointType=? AND SalePointName=? AND isTerminated=0`,[guid,outlet,salePointType,salePointName]
   );
   const data = helper.emptyOrRows(result);
   if(data.length>0)return data;
@@ -32,7 +32,6 @@ async function getForAddOrder(guid,outlet,salePointName,salePointType) {
 
 async function create(runningOrder,guid) {
   const isAlreadyAnActiveTable=await getForAddOrder(guid,runningOrder.OutletName,runningOrder.SalePointName,runningOrder.SalePointType);
-
   if(isAlreadyAnActiveTable==null||isAlreadyAnActiveTable.length==0){
     let amount=0;
     for(var menuListVal of runningOrder.menuList){
@@ -46,12 +45,13 @@ async function create(runningOrder,guid) {
     );
 
     let message = "Error in creating running order";
-
+      let kotNumber;
     if (result.affectedRows) {
       const lastId=await db.query('SELECT @last_uuid;');
       message = lastId[0]['@last_uuid'];
+      kotNumber=1;
     }
-    return { message };
+    return { message,kotNumber };
   }
   else{
     let amount=0;
@@ -59,6 +59,7 @@ async function create(runningOrder,guid) {
       amount+=(menuListVal.Rate*menuListVal.Quantity)*(1+menuListVal.TaxRate*0.01)
     }
     var activeTable=isAlreadyAnActiveTable[0];
+    console.log(activeTable.KotNumbers);
     var lastKotNumber=parseInt(activeTable.KotNumbers.split(',').slice(-1));
     var kotNumber=lastKotNumber+1;
     activeTable.KotNumbers=activeTable.KotNumbers+","+(kotNumber);
@@ -73,6 +74,23 @@ async function create(runningOrder,guid) {
     return { message, kotNumber };
   }
   
+}
+
+async function terminate(id) {
+  const result = await db.query(
+    `UPDATE RunningOrder 
+    SET 
+    isTerminated= 1 
+    WHERE id = '${id}'`
+  );
+
+  let message = "Error in terminating running order";
+
+  if (result.affectedRows) {
+    message = "Running order terminated successfully";
+  }
+
+  return message;
 }
 
 async function update(id, runningOrder) {
@@ -120,5 +138,6 @@ module.exports = {
   getForAddOrder,
   create,
   update,
+  terminate,
   remove,
 };
