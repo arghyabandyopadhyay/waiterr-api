@@ -16,6 +16,20 @@ async function getUsingMobileNo(mobile) {
   return data[0];
 }
 
+async function getUsingMobileNoForWaiterRegistration(mobile) {
+  let statusCode=204;
+  let message={};
+  result = await db.query(
+    `SELECT * FROM UserDetails WHERE mobileNumber=?`,[mobile]
+  );
+  const data = helper.emptyOrRows(result);
+  if(data.length>0){
+    message=data[0];
+    statusCode=200;
+  }
+  return {statusCode:statusCode,body:message};
+}
+
 async function create(userDetails) {
   let message;
   let statusCode;
@@ -80,6 +94,7 @@ async function remove(id) {
 
 module.exports = {
   get,
+  getUsingMobileNoForWaiterRegistration,
   create,
   update,
   remove,
