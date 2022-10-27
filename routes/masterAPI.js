@@ -8,7 +8,9 @@ const waiterrMenuGroup=require("../services/waiterrMenuGroup");
 const maxTakeAway=require("../services/maxTakeAway");
 const commentForKotSuggestions=require("../services/commentForKotSuggestions");
 const salePointHistory=require("../services/salePointHistory");
+const userClientAllocation=require("../services/userClientAllocation");
 const orders=require("../services/orders");
+const userDetails = require("../services/userDetails");
 const config=require('../config/config');
 const { json } = require("body-parser");
 
@@ -175,10 +177,35 @@ const theToken = req.headers.authorization.split(' ')[1];
         const result=await salePointHistory.approveOrders(forApproval,forAggregate,runningOrderId,req.body.GUID,kotNumber,approvalType,allProcessed);
         res.status(result['statusCode']).json(result['message']);
     }
-
+    else if(requestJson.RequestType=="Waiters"){
+      const parameterList=requestJson.ParameterList;
+      //get all waiters
+      if(parameterList==null){
+        const result=await userClientAllocation.getAllWaiters(req.body.GUID);
+        res.status(result['statusCode']).json(result['body']);  
+      } 
+      //get waiter detail
+      else if(parameterList.length==1){
+        var mobileNo;
+        parameterList.forEach(element => {
+          if(element.P_Key=='MobileNo')mobileNo=element.P_Value;
+        });
+        const result=await userDetails.getUsingMobileNoForWaiterRegistration(mobileNo);
+        res.status(result['statusCode']).json(result['body']);  
+      } 
+      //create a new waiter  
+      else{
+        var userId,outletId;
+        parameterList.forEach(element => {
+          if(element.P_Key=='UserId')userId=element.P_Value;
+          else if(element.P_Key=="OutletId")outletId=element.P_Value;
+        });
+        const result=await userClientAllocation.create(userId,outletId);
+        res.status(result['statusCode']).json(result['body']);  
+      }
+    }
     // res.json(await runningOrder.create(req.body));
   } catch (err) {
-    console.log(err);
     res.status(401).json({message:'Unauthorised Access'});
   }
 });
