@@ -6,7 +6,6 @@ async function get(userId) {
     `SELECT Outlets.id, GUID, CompanyGUID, OutletName, OutletSalePoint, ClientName, LogoUrl, DataExchangeVia, DataExchangeUrl FROM UserClientAllocation  LEFT JOIN Outlets ON UserClientAllocation.OutletId=Outlets.id LEFT JOIN Clients ON Outlets.GUID = Clients.id WHERE UserId='${userId}'`
   );
   const data = helper.emptyOrRows(result);
-  console.log(data)
   if(data.length>0){
     var groupBy = function(xs, key) {
       return xs.reduce(function(rv, x) {
@@ -32,12 +31,23 @@ async function get(userId) {
   else return{statusCode:204,body:""};
 }
 
-async function create(userClientAllocation) {
+async function getAllWaiters(guid) {
+  result = await db.query(
+    `SELECT UserDetails.id AS id, Name, MobileNumber, RoleId, IsActive, last_login, Outlets.id AS OutletId, OutletName FROM Clients LEFT JOIN Outlets ON Clients.id=Outlets.GUID LEFT JOIN UserClientAllocation ON Outlets.id=UserClientAllocation.OutletId LEFT JOIN UserDetails ON UserClientAllocation.UserId=UserDetails.id WHERE RoleId=1 AND Clients.id=?`,[guid]
+  );
+  const data = helper.emptyOrRows(result);
+  if(data.length>0){
+    return {statusCode:200,body:data};
+  }
+  else return{statusCode:204,body:""};
+}
+
+async function create(userId, outletId) {
   let message;
   let statusCode;
   try{
     const result = await db.query(
-      `INSERT INTO UserClientAllocation (ClientName, LogoUrl, DataExchangeVia, DataExchangeUrl, GUID, CompanyGUID, OutletName, OutletSalePoint) VALUES ("${userClientAllocation.ClientName}", "${userClientAllocation.LogoUrl}", "${userClientAllocation.DataExchangeVia}", "${userClientAllocation.DataExchangeUrl}", "${userClientAllocation.GUID}", "${userClientAllocation.CompanyGUID}", "${userClientAllocation.OutletName}", "${userClientAllocation.OutletSalePoint}");`
+      `INSERT INTO UserClientAllocation (UserId, OutletId) VALUES (?, ?);`,[userId,outletId]
     );
     message = "Error in creating user client allocation";
     statusCode=500;
@@ -92,6 +102,7 @@ async function remove(id) {
 
 module.exports = {
   get,
+  getAllWaiters,
   create,
   update,
   remove,
