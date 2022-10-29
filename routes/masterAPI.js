@@ -93,11 +93,11 @@ const theToken = req.headers.authorization.split(' ')[1];
       }
     }
     else if(requestJson.RequestType=="Waiterr Menu"){
-      if(requestJson.ParameterList==null){
+      const parameterList=requestJson.ParameterList;
+      if(parameterList==null){
         res.json(await waiterrMenu.getForMenuManagement(req.body.GUID));
       }
       else if(parameterList.length==1){
-        const parameterList=requestJson.ParameterList;
         var restaurantId;
         parameterList.forEach(element => {
           if(element.P_Key=='restaurantId')restaurantId=element.P_Value;
@@ -105,7 +105,6 @@ const theToken = req.headers.authorization.split(' ')[1];
         res.json(await waiterrMenu.get(req.body.GUID,restaurantId));
       }
       else if(parameterList.length==2){
-        const parameterList=requestJson.ParameterList;
         var clientMobile,restaurantId;
         parameterList.forEach(element => {
           if(element.P_Key=='clientId')clientMobile=element.P_Value;
@@ -115,7 +114,28 @@ const theToken = req.headers.authorization.split(' ')[1];
       }
     }
     else if(requestJson.RequestType=="Waiterr Menu Group"){
-      res.json(await waiterrMenuGroup.get(req.body.GUID));
+      const parameterList=requestJson.ParameterList;
+      if(parameterList==null){
+        res.json(await waiterrMenuGroup.get(req.body.GUID));
+      }
+      else if(parameterList.length==1){
+        var outletId;
+        parameterList.forEach(element => {
+          if(element.P_Key=='OutletId')outletId=element.P_Value;
+        });
+        const result=await waiterrMenuGroup.getForOutlet(req.body.GUID,outletId);
+        res.json(result);
+      }
+      else {
+        var outletId,stockGroup,imageUrl;
+        parameterList.forEach(element => {
+          if(element.P_Key=='OutletId')outletId=element.P_Value;
+          else if(element.P_Key=='StockGroup')stockGroup=element.P_Value;
+          else if(element.P_Key=='ImageUrl')imageUrl=element.P_Value;
+        });
+        const result=await waiterrMenuGroup.create(req.body.GUID,outletId,stockGroup,imageUrl);
+        res.json(result['message']);
+      }
     }
     else if(requestJson.RequestType=="Place Order"){
       const responseBody=(JSON.parse(requestJson.RequestBody));
