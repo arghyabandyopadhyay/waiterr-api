@@ -3,7 +3,16 @@ const helper = require("../helper");
 
 async function get(guid) {
   const result = await db.query(
-    `SELECT * FROM MenuGroup WHERE ClientId='${guid}'`
+    `SELECT * FROM MenuGroup WHERE ClientId=?`,[guid]
+  );
+  const data = helper.emptyOrRows(result);
+
+  if(data.length>0)return data;
+  else return ;
+}
+async function getForOutlet(guid,outletId) {
+  const result = await db.query(
+    `SELECT * FROM MenuGroup WHERE ClientId=? AND OutletId=?`,[guid,outletId]
   );
   const data = helper.emptyOrRows(result);
 
@@ -11,18 +20,18 @@ async function get(guid) {
   else return ;
 }
 
-async function create(runningOrder) {
+async function create(guid,outletId,stockGroup,imageUrl) {
   const result = await db.query(
-    `INSERT INTO RunningOrder 
-    (Name,MobileNo,SalePointType,SalePointName,WaiterName,Amount,PAX,BillPrinted,OutletName)
+    `INSERT INTO MenuGroup 
+    (ImageUrl,StockGroup,ClientId,OutletId)
     VALUES 
-    ('${runningOrder.Name}' ,'${runningOrder.MobileNo}' ,'${runningOrder.SalePointType}' ,'${runningOrder.SalePointName}','${runningOrder.WaiterName}','${runningOrder.Amount}',${runningOrder.PAX},${runningOrder.BillPrinted},'${runningOrder.OutletName}');`
+    (?,?,?,?);`,[imageUrl,stockGroup,guid,outletId]
   );
 
   let message = "Error in creating running order";
 
   if (result.affectedRows) {
-    message = "Running order created successfully";
+    message = "Success";
   }
 
   return { message };
@@ -70,6 +79,7 @@ async function remove(id) {
 
 module.exports = {
   get,
+  getForOutlet,
   create,
   update,
   remove,
