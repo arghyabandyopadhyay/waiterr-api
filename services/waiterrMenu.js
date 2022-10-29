@@ -4,7 +4,7 @@ const helper = require("../helper");
 
 async function get(guid,restaurantId) {
   const result = await db.query(
-    `SELECT MenuItem.id,ItemImage,Item,ItemDescription,CommentForKOT,MenuGroup.id as StockGroupId,RateBeforeDiscount,Discount,Rate,TaxClassId,IsDiscountable,IsVeg,TaxRate,Tags,Price,MenuItem.ClientId,Favourite,ImageUrl,StockGroup FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id WHERE MenuItem.restrauntId=? And MenuItem.clientId=?`,[restaurantId,guid]
+    `SELECT MenuItem.id,ItemImage,Item,ItemDescription,CommentForKOT,MenuGroup.id as StockGroupId,RateBeforeDiscount,Discount,Rate,TaxClassId,IsDiscountable,IsVeg,TaxRate,Tags,Price,MenuItem.ClientId,Favourite,ImageUrl,StockGroup FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id WHERE MenuItem.restaurantId=? And MenuItem.clientId=?`,[restaurantId,guid]
   );
   const data = helper.emptyOrRows(result);
 
@@ -14,17 +14,16 @@ async function get(guid,restaurantId) {
 
 async function getForMenuManagement(guid) {
   const result = await db.query(
-    `SELECT MenuItem.id, ItemImage, Item, ItemDescription, MenuGroup.id as StockGroupId, RateBeforeDiscount, Discount, Rate, TaxClassId, IsDiscountable, IsVeg, TaxRate, Tags, Price, MenuItem.ClientId, Favourite, ImageUrl, StockGroup, restrauntId AS OutletId, OutletName FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id LEFT JOIN MenuItem.restaurantId=Outlets.id WHERE MenuItem.clientId=? ORDER BY restrauntId`,[guid]
+    `SELECT MenuItem.id, ItemImage, Item, ItemDescription, MenuGroup.id as StockGroupId, RateBeforeDiscount, Discount, Rate, TaxClassId, IsDiscountable, IsVeg, TaxRate, Tags, Price, MenuItem.ClientId, Favourite, ImageUrl, StockGroup, restaurantId AS OutletId, OutletName FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id LEFT JOIN Outlets ON MenuItem.restaurantId=Outlets.id WHERE MenuItem.clientId=? ORDER BY restaurantId`,[guid]
   );
   const data = helper.emptyOrRows(result);
-
   if(data.length>0)return data;
   else return ;
 }
 
 async function getForClient(guid,clientId,restaurantId) {
   const result = await db.query(
-    `SELECT MenuItem.id,ItemImage,Item,ItemDescription,MenuGroup.id as StockGroupId,RateBeforeDiscount,Discount,Rate,TaxClassId,IsDiscountable,IsVeg,TaxRate,Tags,Price,MenuItem.ClientId,Favourite,ImageUrl,StockGroup FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id WHERE MenuItem.restrauntId=? And MenuItem.clientId=?`,[restaurantId,guid]
+    `SELECT MenuItem.id,ItemImage,Item,ItemDescription,MenuGroup.id as StockGroupId,RateBeforeDiscount,Discount,Rate,TaxClassId,IsDiscountable,IsVeg,TaxRate,Tags,Price,MenuItem.ClientId,Favourite,ImageUrl,StockGroup FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id WHERE MenuItem.restaurantId=? And MenuItem.clientId=?`,[restaurantId,guid]
   );
   const data = helper.emptyOrRows(result);
 
@@ -35,7 +34,7 @@ async function getForClient(guid,clientId,restaurantId) {
 async function create(menuItem) {
   const result = await db.query(
     `INSERT INTO MenuItem 
-    (ItemImage, Item, ItemDescription, StockGroupId, RateBeforeDiscount, Discount, Rate, TaxClassId, IsDiscountable, IsVeg, TaxRate, Tags, Price, ClientId, RestrauntId)
+    (ItemImage, Item, ItemDescription, StockGroupId, RateBeforeDiscount, Discount, Rate, TaxClassId, IsDiscountable, IsVeg, TaxRate, Tags, Price, ClientId, restaurantId)
     VALUES 
     (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`,[menuItem.ItemImage, menuItem.Item, menuItem.ItemDescription, menuItem.StockGroupId, menuItem.RateBeforeDiscount, menuItem.Discount, menuItem.Rate, menuItem.TaxClassId, menuItem.IsDiscountable, menuItem.IsVeg, menuItem.TaxRate, menuItem.Tags, menuItem.Price, menuItem.ClientId, menuItem.OutletId]
   );
