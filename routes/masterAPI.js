@@ -94,16 +94,24 @@ const theToken = req.headers.authorization.split(' ')[1];
     }
     else if(requestJson.RequestType=="Waiterr Menu"){
       if(requestJson.ParameterList==null){
-        res.json(await waiterrMenu.get(req.body.GUID));
+        res.json(await waiterrMenu.getForMenuManagement(req.body.GUID));
       }
-      else{
+      else if(parameterList.length==1){
+        const parameterList=requestJson.ParameterList;
+        var restaurantId;
+        parameterList.forEach(element => {
+          if(element.P_Key=='restaurantId')restaurantId=element.P_Value;
+        });
+        res.json(await waiterrMenu.get(req.body.GUID,restaurantId));
+      }
+      else if(parameterList.length==2){
         const parameterList=requestJson.ParameterList;
         var clientMobile,restaurantId;
         parameterList.forEach(element => {
-          if(element.P_Key=='clientMobile')clientMobile=element.P_Value;
+          if(element.P_Key=='clientId')clientMobile=element.P_Value;
           else if(element.P_Key=='restaurantId')restaurantId=element.P_Value;
         });
-        res.json(await waiterrMenu.get(req.body.GUID,restaurantId));
+        res.json(await waiterrMenu.getForClient(req.body.GUID,clientId,restaurantId));
       }
     }
     else if(requestJson.RequestType=="Waiterr Menu Group"){
