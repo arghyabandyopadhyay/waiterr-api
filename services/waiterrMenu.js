@@ -12,9 +12,9 @@ async function get(guid,restaurantId) {
   else return ;
 }
 
-async function get1(guid,waiterId) {
+async function getForMenuManagement(guid) {
   const result = await db.query(
-    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id WHERE MenuItem.ClientId='${guid}' AND WaiterId='${waiterId}'`
+    `SELECT MenuItem.id, ItemImage, Item, ItemDescription, MenuGroup.id as StockGroupId, RateBeforeDiscount, Discount, Rate, TaxClassId, IsDiscountable, IsVeg, TaxRate, Tags, Price, MenuItem.ClientId, Favourite, ImageUrl, StockGroup, restrauntId AS OutletId, OutletName FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id LEFT JOIN MenuItem.restaurantId=Outlets.id WHERE MenuItem.clientId=? ORDER BY restrauntId`,[guid]
   );
   const data = helper.emptyOrRows(result);
 
@@ -22,9 +22,9 @@ async function get1(guid,waiterId) {
   else return ;
 }
 
-async function get2(guid,outlet,salePointName,salePointType) {
+async function getForClient(guid,clientId,restaurantId) {
   const result = await db.query(
-    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id WHERE MenuItem.ClientId='${guid}' AND OutletName='${outlet}' AND SalePointType='${salePointType}' AND SalePointName='${salePointName}'`
+    `SELECT MenuItem.id,ItemImage,Item,ItemDescription,MenuGroup.id as StockGroupId,RateBeforeDiscount,Discount,Rate,TaxClassId,IsDiscountable,IsVeg,TaxRate,Tags,Price,MenuItem.ClientId,Favourite,ImageUrl,StockGroup FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id WHERE MenuItem.restrauntId=? And MenuItem.clientId=?`,[restaurantId,guid]
   );
   const data = helper.emptyOrRows(result);
 
@@ -32,18 +32,18 @@ async function get2(guid,outlet,salePointName,salePointType) {
   else return ;
 }
 
-async function create(runningOrder) {
+async function create(menuItem) {
   const result = await db.query(
-    `INSERT INTO RunningOrder 
-    (Name,MobileNo,SalePointType,SalePointName,WaiterName,Amount,PAX,BillPrinted,OutletName)
+    `INSERT INTO MenuItem 
+    (ItemImage, Item, ItemDescription, StockGroupId, RateBeforeDiscount, Discount, Rate, TaxClassId, IsDiscountable, IsVeg, TaxRate, Tags, Price, ClientId, RestrauntId)
     VALUES 
-    ('${runningOrder.Name}' ,'${runningOrder.MobileNo}' ,'${runningOrder.SalePointType}' ,'${runningOrder.SalePointName}','${runningOrder.WaiterName}','${runningOrder.Amount}',${runningOrder.PAX},${runningOrder.BillPrinted},'${runningOrder.OutletName}');`
+    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`,[menuItem.ItemImage, menuItem.Item, menuItem.ItemDescription, menuItem.StockGroupId, menuItem.RateBeforeDiscount, menuItem.Discount, menuItem.Rate, menuItem.TaxClassId, menuItem.IsDiscountable, menuItem.IsVeg, menuItem.TaxRate, menuItem.Tags, menuItem.Price, menuItem.ClientId, menuItem.OutletId]
   );
 
-  let message = "Error in creating running order";
+  let message = "Error in creating Menu Item";
 
   if (result.affectedRows) {
-    message = "Running order created successfully";
+    message = "Menu Item created successfully";
   }
 
   return { message };
@@ -91,8 +91,8 @@ async function remove(id) {
 
 module.exports = {
   get,
-  get1,
-  get2,
+  getForClient,
+  getForMenuManagement,
   create,
   update,
   remove,
