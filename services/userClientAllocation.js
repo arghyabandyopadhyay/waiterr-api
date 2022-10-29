@@ -3,7 +3,7 @@ const helper = require("../helper");
 
 async function get(userId) {
   result = await db.query(
-    `SELECT Outlets.id, GUID, CompanyGUID, OutletName, OutletSalePoint, ClientName, LogoUrl, DataExchangeVia, DataExchangeUrl FROM UserClientAllocation  LEFT JOIN Outlets ON UserClientAllocation.OutletId=Outlets.id LEFT JOIN Clients ON Outlets.GUID = Clients.id WHERE UserId='${userId}'`
+    `SELECT Outlets.id, GUID, CompanyGUID, OutletName, OutletSalePoint, ClientName, LogoUrl, DataExchangeVia, DataExchangeUrl FROM UserClientAllocation  LEFT JOIN Outlets ON UserClientAllocation.OutletId=Outlets.id LEFT JOIN Clients ON Outlets.GUID = Clients.id WHERE UserId=?`,[userId]
   );
   const data = helper.emptyOrRows(result);
   if(data.length>0){
@@ -33,7 +33,7 @@ async function get(userId) {
 
 async function getAllWaiters(guid) {
   result = await db.query(
-    `SELECT UserDetails.id AS id, Name, MobileNumber, RoleId, IsActive, last_login, Outlets.id AS OutletId, OutletName FROM Clients LEFT JOIN Outlets ON Clients.id=Outlets.GUID LEFT JOIN UserClientAllocation ON Outlets.id=UserClientAllocation.OutletId LEFT JOIN UserDetails ON UserClientAllocation.UserId=UserDetails.id WHERE RoleId=1 AND Clients.id=?`,[guid]
+    `SELECT UserDetails.id AS id, Name, MobileNumber, RoleId, IsActive, last_login, Outlets.id AS OutletId, OutletName FROM Clients LEFT JOIN Outlets ON Clients.id=Outlets.GUID LEFT JOIN UserClientAllocation ON Outlets.id=UserClientAllocation.OutletId LEFT JOIN UserDetails ON UserClientAllocation.UserId=UserDetails.id WHERE RoleId=1 AND Clients.id=? ORDER BY Outlets.id`,[guid]
   );
   const data = helper.emptyOrRows(result);
   if(data.length>0){
