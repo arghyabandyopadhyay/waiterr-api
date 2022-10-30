@@ -4,7 +4,7 @@ const helper = require("../helper");
 
 async function get(guid,restaurantId) {
   const result = await db.query(
-    `SELECT MenuItem.id,ItemImage,Item,ItemDescription,CommentForKOT,MenuGroup.id as StockGroupId,RateBeforeDiscount,Discount,Rate,TaxClassId,IsDiscountable,IsVeg,TaxRate,Tags,Price,MenuItem.ClientId,Favourite,ImageUrl,StockGroup FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id WHERE MenuItem.restaurantId=? And MenuItem.clientId=?`,[restaurantId,guid]
+    `SELECT MenuItem.id,ItemImage,Item,ItemDescription,CommentForKOT,MenuGroup.id as StockGroupId,RateBeforeDiscount,Discount,Rate,TaxClassId,IsDiscountable,IsVeg,TaxRate,Tags,MenuItem.ClientId,Favourite,ImageUrl,StockGroup FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id LEFT JOIN TaxClasses ON MenuItem.TaxClassId=TaxClasses.id WHERE MenuItem.restaurantId=? And MenuItem.clientId=?`,[restaurantId,guid]
   );
   const data = helper.emptyOrRows(result);
 
@@ -14,7 +14,7 @@ async function get(guid,restaurantId) {
 
 async function getForMenuManagement(guid) {
   const result = await db.query(
-    `SELECT MenuItem.id, ItemImage, Item, ItemDescription, MenuGroup.id as StockGroupId, RateBeforeDiscount, Discount, Rate, TaxClassId, IsDiscountable, IsVeg, TaxRate, Tags, Price, MenuItem.ClientId, Favourite, ImageUrl, StockGroup, restaurantId AS OutletId, OutletName FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id LEFT JOIN Outlets ON MenuItem.restaurantId=Outlets.id WHERE MenuItem.clientId=? ORDER BY restaurantId`,[guid]
+    `SELECT MenuItem.id, ItemImage, Item, ItemDescription, MenuGroup.id as StockGroupId, RateBeforeDiscount, Discount, Rate, TaxClassId, IsDiscountable, IsVeg, TaxRate, Tags, MenuItem.ClientId, Favourite, ImageUrl, StockGroup, restaurantId AS OutletId, OutletName FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id  LEFT JOIN TaxClasses ON MenuItem.TaxClassId=TaxClasses.id LEFT JOIN Outlets ON MenuItem.restaurantId=Outlets.id WHERE MenuItem.clientId=? ORDER BY restaurantId`,[guid]
   );
   const data = helper.emptyOrRows(result);
   if(data.length>0)return data;
@@ -23,7 +23,7 @@ async function getForMenuManagement(guid) {
 
 async function getForClient(guid,clientId,restaurantId) {
   const result = await db.query(
-    `SELECT MenuItem.id,ItemImage,Item,ItemDescription,MenuGroup.id as StockGroupId,RateBeforeDiscount,Discount,Rate,TaxClassId,IsDiscountable,IsVeg,TaxRate,Tags,Price,MenuItem.ClientId,Favourite,ImageUrl,StockGroup FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id WHERE MenuItem.restaurantId=? And MenuItem.clientId=?`,[restaurantId,guid]
+    `SELECT MenuItem.id,ItemImage,Item,ItemDescription,MenuGroup.id as StockGroupId,RateBeforeDiscount,Discount,Rate,TaxClassId,IsDiscountable,IsVeg,TaxRate,Tags,MenuItem.ClientId,Favourite,ImageUrl,StockGroup FROM MenuItem LEFT JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id  LEFT JOIN TaxClasses ON MenuItem.TaxClassId=TaxClasses.id WHERE MenuItem.restaurantId=? And MenuItem.clientId=?`,[restaurantId,guid]
   );
   const data = helper.emptyOrRows(result);
 
@@ -31,44 +31,83 @@ async function getForClient(guid,clientId,restaurantId) {
   else return ;
 }
 
-async function create(menuItem) {
+async function create(guid,menuItem) {
   const result = await db.query(
     `INSERT INTO MenuItem 
-    (ItemImage, Item, ItemDescription, StockGroupId, RateBeforeDiscount, Discount, Rate, TaxClassId, IsDiscountable, IsVeg, TaxRate, Tags, Price, ClientId, restaurantId)
+    (ItemImage, 
+      Item, 
+      ItemDescription, 
+      StockGroupId, 
+      RateBeforeDiscount, 
+      Discount, 
+      Rate, 
+      TaxClassId, 
+      IsDiscountable, 
+      IsVeg, 
+      Tags, 
+      ClientId, 
+      restaurantId)
     VALUES 
-    (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`,[menuItem.ItemImage, menuItem.Item, menuItem.ItemDescription, menuItem.StockGroupId, menuItem.RateBeforeDiscount, menuItem.Discount, menuItem.Rate, menuItem.TaxClassId, menuItem.IsDiscountable, menuItem.IsVeg, menuItem.TaxRate, menuItem.Tags, menuItem.Price, menuItem.ClientId, menuItem.OutletId]
+    (?,?,?,?,?,?,?,?,?,?,?,?,?);`,
+    [menuItem.ItemImage, 
+      menuItem.Item, 
+      menuItem.ItemDescription, 
+      menuItem.StockGroupId, 
+      menuItem.RateBeforeDiscount, 
+      menuItem.Discount, 
+      menuItem.Rate, 
+      menuItem.TaxClassId, 
+      menuItem.IsDiscountable?1:0, 
+      menuItem.IsVeg?1:0, 
+      menuItem.Tags, 
+      guid, 
+      menuItem.OutletId]
   );
 
   let message = "Error in creating Menu Item";
 
   if (result.affectedRows) {
-    message = "Menu Item created successfully";
+    message = "Success";
   }
 
   return { message };
 }
 
-async function update(id, runningOrder) {
+async function update(menuItem,id) {
   const result = await db.query(
-    `UPDATE RunningOrder 
-    SET 
-    Name= '${runningOrder.Name}' ,
-    MobileNo= '${runningOrder.MobileNo}' ,
-    SalePointType= '${runningOrder.SalePointType}' ,
-    SalePointName= '${runningOrder.SalePointName}',
-    WaiterName= '${runningOrder.WaiterName}',
-    Amount= '${runningOrder.Amount}',
-    PAX= ${runningOrder.PAX},
-    ActiveSince= '${runningOrder.ActiveSince}',
-    BillPrinted= ${runningOrder.BillPrinted},
-    OutletName= '${runningOrder.OutletName}'
-    WHERE id = '${id}'`
+    `UPDATE MenuItem 
+      SET 
+      ItemImage=?, 
+      Item=?, 
+      ItemDescription=?, 
+      StockGroupId=?, 
+      RateBeforeDiscount=?, 
+      Discount=?, 
+      Rate=?, 
+      TaxClassId=?, 
+      IsDiscountable=?, 
+      IsVeg=?, 
+      Tags=?
+    WHERE id = ?`,[
+      menuItem.ItemImage, 
+      menuItem.Item, 
+      menuItem.ItemDescription, 
+      menuItem.StockGroupId, 
+      menuItem.RateBeforeDiscount, 
+      menuItem.Discount, 
+      menuItem.Rate, 
+      menuItem.TaxClassId, 
+      menuItem.IsDiscountable?1:0, 
+      menuItem.IsVeg?1:0, 
+      menuItem.Tags, 
+      id
+    ]
   );
 
-  let message = "Error in updating user Details";
+  let message = "Error in updating Menu Item";
 
   if (result.affectedRows) {
-    message = "User Details updated successfully";
+    message = "Success";
   }
 
   return { message };
