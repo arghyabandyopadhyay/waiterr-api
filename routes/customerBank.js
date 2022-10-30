@@ -43,7 +43,6 @@ const theToken = req.headers.authorization.split(' ')[1];
     result=await customerDetail.create(req.body);
     res.status(result['statusCode']).json(result['body']);
   } catch (err) {
-    console.log(err);
     res.status(401).json({message:'Unauthorised Access'});
   }
 });
