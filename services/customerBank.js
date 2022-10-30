@@ -56,7 +56,6 @@ async function update(id, customerDetail) {
         statusCode=200;
         message = "User Details updated successfully";
 }}catch(err){
-    console.log(err);
     message=err.message;
     statusCode=403;
   }
