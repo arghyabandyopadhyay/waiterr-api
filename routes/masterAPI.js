@@ -11,6 +11,7 @@ const salePointHistory=require("../services/salePointHistory");
 const userClientAllocation=require("../services/userClientAllocation");
 const orders=require("../services/orders");
 const userDetails = require("../services/userDetails");
+const taxClasses=require("../services/taxClasses");
 const config=require('../config/config');
 const { json } = require("body-parser");
 
@@ -113,6 +114,26 @@ const theToken = req.headers.authorization.split(' ')[1];
         res.json(await waiterrMenu.getForClient(req.body.GUID,clientId,restaurantId));
       }
     }
+    else if(requestJson.RequestType=="Waiterr Menu Edit"){
+      const parameterList=requestJson.ParameterList;
+      if(parameterList.length==1){
+        var menuItem;
+        parameterList.forEach(element => {
+          if(element.P_Key=='menuItem')menuItem=JSON.parse(element.P_Value);
+        });
+        const result=await waiterrMenu.create(req.body.GUID,menuItem);
+        res.json(result['message']);
+      }
+      else if(parameterList.length==2){
+        var menuItem,id;
+        parameterList.forEach(element => {
+          if(element.P_Key=='menuItem')menuItem=JSON.parse(element.P_Value);
+          if(element.P_Key=='id')id=element.P_Value;
+        });
+        const result=await waiterrMenu.update(menuItem,id);
+        res.json(result['message']);
+      }
+    }
     else if(requestJson.RequestType=="Waiterr Menu Group"){
       const parameterList=requestJson.ParameterList;
       if(parameterList==null){
@@ -134,6 +155,31 @@ const theToken = req.headers.authorization.split(' ')[1];
           else if(element.P_Key=='ImageUrl')imageUrl=element.P_Value;
         });
         const result=await waiterrMenuGroup.create(req.body.GUID,outletId,stockGroup,imageUrl);
+        res.json(result['message']);
+      }
+    }
+    else if(requestJson.RequestType=="Tax Class"){
+      const parameterList=requestJson.ParameterList;
+      if(parameterList==null){
+        res.json(await taxClasses.get(req.body.GUID));
+      }
+      else if(parameterList.length==2){
+        var taxClass,taxRate;
+        parameterList.forEach(element => {
+          if(element.P_Key=='TaxClass')taxClass=element.P_Value;
+          else if(element.P_Key=='TaxRate')taxRate=element.P_Value;
+        });
+        const result=await taxClasses.create(req.body.GUID,taxClass,taxRate);
+        res.json(result['message']);
+      }
+      else if(parameterList.length==3){
+        var taxClass,taxRate,id;
+        parameterList.forEach(element => {
+          if(element.P_Key=='TaxClass')taxClass=element.P_Value;
+          else if(element.P_Key=='TaxRate')taxRate=element.P_Value;
+          else if(element.P_Key=='TaxId')id=element.P_Value;
+        });
+        const result=await taxClasses.update(id,taxClass,taxRate);
         res.json(result['message']);
       }
     }
