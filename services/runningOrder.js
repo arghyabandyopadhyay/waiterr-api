@@ -59,7 +59,6 @@ async function create(runningOrder,guid) {
       amount+=(menuListVal.Rate*menuListVal.Quantity)*(1+menuListVal.TaxRate*0.01)
     }
     var activeTable=isAlreadyAnActiveTable[0];
-    console.log(activeTable.KotNumbers);
     var lastKotNumber=parseInt(activeTable.KotNumbers.split(',').slice(-1));
     var kotNumber=lastKotNumber+1;
     activeTable.KotNumbers=activeTable.KotNumbers+","+(kotNumber);
