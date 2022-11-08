@@ -59,18 +59,18 @@ const theToken = req.headers.authorization.split(' ')[1];
       }
       else{
         const parameterList=requestJson.ParameterList;
-        if(parameterList.length==1){
-          var waiterId;
+        if(parameterList.length==2){
+          var waiterId, includePastOrder;
           parameterList.forEach(element => {
             if(element.P_Key=='WaiterId')waiterId=element.P_Value;
+            else if(element.P_Key=='IncludePastOrder')includePastOrder=element.P_Value;
           });
-          res.json(await runningOrder.getForWaiterId(waiterId));
+          res.json(await runningOrder.getForWaiterId(waiterId,includePastOrder));
         }
-        else if(parameterList.length==2){
-          var runningOrderId, terminate;
+        else if(parameterList.length==1){
+          var runningOrderId;
           parameterList.forEach(element=>{
-            if(element.P_Key=='Terminate')terminate=element.P_Value;
-            else if(element.P_Key=='RunningOrderId')runningOrderId=element.P_Value;
+            if(element.P_Key=='RunningOrderId')runningOrderId=element.P_Value;
           })
           res.json(await runningOrder.terminate(runningOrderId));
         }
@@ -116,6 +116,7 @@ const theToken = req.headers.authorization.split(' ')[1];
     }
     else if(requestJson.RequestType=="Waiterr Menu Edit"){
       const parameterList=requestJson.ParameterList;
+      console.log(parameterList.length);
       if(parameterList.length==1){
         var menuItem;
         parameterList.forEach(element => {
