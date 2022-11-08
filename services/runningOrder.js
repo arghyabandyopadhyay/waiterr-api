@@ -3,7 +3,7 @@ const helper = require("../helper");
 
 async function get(guid) {
   const result = await db.query(
-    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, OutletId, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id LEFT JOIN Outlets ON RunningOrder.OutletId=Outlets.id WHERE ClientId='${guid}' AND isTerminated=0 ORDER BY ActiveSince Desc`
+    `SELECT RunningOrder.id, isTerminated, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, OutletId, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder INNER JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id INNER JOIN Outlets ON RunningOrder.OutletId=Outlets.id WHERE ClientId='${guid}' AND isTerminated=0 ORDER BY ActiveSince Desc`
   );
   const data = helper.emptyOrRows(result);
 
@@ -11,19 +11,39 @@ async function get(guid) {
   else return ;
 }
 
-async function getForWaiterId(waiterId) {
+async function getForWaiterId(waiterId,includePastOrder) {
+  console.log(includePastOrder?'ORDER BY isTerminated':'isTerminated=0 ORDER BY ActiveSince Desc');
   const result = await db.query(
-    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, OutletId, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id LEFT JOIN Outlets ON RunningOrder.OutletId=Outlets.id WHERE WaiterId=? AND isTerminated=0 ORDER BY ActiveSince Desc`,[waiterId]
+    `SELECT RunningOrder.id, 
+    isTerminated, 
+    RunningOrder.name as Name, 
+    MobileNo, 
+    SalePointType, 
+    SalePointName, 
+    Amount, 
+    PAX, 
+    ActiveSince, 
+    BillPrinted, 
+    OutletName, 
+    OutletId, 
+    MobileNumber as WaiterMoblieNo, 
+    UserDetails.Name as WaiterName 
+    FROM RunningOrder 
+    INNER JOIN 
+    UserDetails On RunningOrder.WaiterId=UserDetails.id 
+    INNER JOIN 
+    Outlets ON RunningOrder.OutletId=Outlets.id 
+    WHERE WaiterId=? ${includePastOrder?'ORDER BY isTerminated':'AND isTerminated=0 ORDER BY ActiveSince Desc'}`,[waiterId]
   );
   const data = helper.emptyOrRows(result);
-
+    console.log(result);
   if(data.length>0)return data;
   else return ;
 }
 
 async function getForAddOrder(guid,outlet,salePointName,salePointType) {
   const result = await db.query(
-    `SELECT RunningOrder.id, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, OutletId, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName, KotNumbers FROM RunningOrder LEFT JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id LEFT JOIN Outlets ON RunningOrder.OutletId=Outlets.id WHERE ClientId=? AND OutletName=? AND SalePointType=? AND SalePointName=? AND isTerminated=0`,[guid,outlet,salePointType,salePointName]
+    `SELECT RunningOrder.id, isTerminated, RunningOrder.name as Name, MobileNo, SalePointType, SalePointName, Amount, PAX, ActiveSince, BillPrinted, OutletName, OutletId, MobileNumber as WaiterMoblieNo, UserDetails.Name as WaiterName, KotNumbers FROM RunningOrder INNER JOIN UserDetails On RunningOrder.WaiterId=UserDetails.id INNER JOIN Outlets ON RunningOrder.OutletId=Outlets.id WHERE ClientId=? AND OutletName=? AND SalePointType=? AND SalePointName=? AND isTerminated=0`,[guid,outlet,salePointType,salePointName]
   );
   const data = helper.emptyOrRows(result);
   if(data.length>0)return data;
