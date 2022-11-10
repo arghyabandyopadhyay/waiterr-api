@@ -33,7 +33,7 @@ async function get(userId) {
 
 async function getAllWaiters(guid) {
   result = await db.query(
-    `SELECT UserDetails.id AS id, Name, MobileNumber, RoleId, IsActive, last_login, Outlets.id AS OutletId, OutletName, UCARoleId FROM Clients INNER JOIN Outlets ON Clients.id=Outlets.GUID INNER JOIN UserClientAllocation ON Outlets.id=UserClientAllocation.OutletId INNER JOIN UserDetails ON UserClientAllocation.UserId=UserDetails.id WHERE Clients.id=? ORDER BY UserClientAllocation.OutletId`,[guid]
+    `SELECT UserDetails.id AS id, UserClientAllocation.id AS UserClientAllocationId, Name, MobileNumber, RoleId, IsActive, last_login, Outlets.id AS OutletId, OutletName, UCARoleId FROM Clients INNER JOIN Outlets ON Clients.id=Outlets.GUID INNER JOIN UserClientAllocation ON Outlets.id=UserClientAllocation.OutletId INNER JOIN UserDetails ON UserClientAllocation.UserId=UserDetails.id WHERE Clients.id=? ORDER BY UserClientAllocation.OutletId`,[guid]
   );
   const data = helper.emptyOrRows(result);
   if(data.length>0){
@@ -87,17 +87,23 @@ async function update(id, userClientAllocation) {
 }
 
 async function remove(id) {
-  const result = await db.query(
-    `DELETE FROM UserClientAllocation WHERE id='${id}'`
-  );
-
-  let message = "Error in deleting user client allocation";
-
-  if (result.affectedRows) {
-    message = "User client allocation data deleted successfully";
+  let message;
+  let statusCode;
+  try{
+    const result = await db.query(
+      `DELETE FROM UserClientAllocation WHERE id='${id}'`
+    );
+    message = "Error in deleting user client allocation";
+    statusCode=500;
+    if (result.affectedRows) {
+      message = "User client allocation data deleted successfully";
+      statusCode=200;
+    }
+  }catch(err){
+      message=err.message;
+      statusCode=403;
   }
-
-  return { message };
+  return {statusCode:statusCode,body:message};
 }
 
 module.exports = {
