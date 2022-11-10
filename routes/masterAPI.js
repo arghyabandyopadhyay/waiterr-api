@@ -13,7 +13,9 @@ const orders=require("../services/orders");
 const userDetails = require("../services/userDetails");
 const taxClasses=require("../services/taxClasses");
 const config=require('../config/config');
+const outlets=require('../services/outlets');
 const { json } = require("body-parser");
+const { request } = require("express");
 
 /* GET user detailss. */
 
@@ -277,6 +279,39 @@ const theToken = req.headers.authorization.split(' ')[1];
         });
         const result=await userClientAllocation.create(userId,outletId);
         res.status(result['statusCode']).json(result['body']);  
+      }
+    }
+    else if(requestJson.RequestType=="Outlet Configurations"){
+      const parameterList=requestJson.ParameterList;
+      //get all outlets
+      if(parameterList==null){
+        const result=await outlets.get(req.body.GUID);
+        res.status(result['statusCode']).json(result['body']);  
+      } 
+      else if(parameterList.length==1){
+        var id;
+        parameterList.forEach(element => {
+          if(element.P_Key=='id')id=element.P_Value;
+        });
+        const result=await outlets.remove(id);
+        res.status(result['statusCode']).json(result['body']);  
+      }
+      else{
+        var outletName,outletSalePoint,id,modificationType;
+        parameterList.forEach(element => {
+          if(element.P_Key=='OutletName')outletName=element.P_Value;
+          else if(element.P_Key=='OutletSalePoint')outletSalePoint=element.P_Value;
+          else if(element.P_Key=='id')id=element.P_Value;
+          else if(element.P_Key=='ModificationType')modificationType=element.P_Value;
+        });
+        if(modificationType=='Create'){
+          const result=await outlets.create(req.body.GUID,outletName,outletSalePoint,id);
+          res.status(result['statusCode']).json(result['body']); 
+        }
+        else{
+          const result=await outlets.update(id,outletName,outletSalePoint);
+          res.status(result['statusCode']).json(result['body']);  
+        } 
       }
     }
     // res.json(await runningOrder.create(req.body));
