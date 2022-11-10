@@ -271,14 +271,23 @@ const theToken = req.headers.authorization.split(' ')[1];
         res.status(result['statusCode']).json(result['body']);  
       } 
       //create a new waiter  
-      else{
-        var userId,outletId;
+      else if(parameterList.length==3){
+        var id,outletId,modificationType;
         parameterList.forEach(element => {
-          if(element.P_Key=='UserId')userId=element.P_Value;
+          if(element.P_Key=='id')id=element.P_Value;
           else if(element.P_Key=="OutletId")outletId=element.P_Value;
+          else if(element.P_Key=="ModificationType")modificationType=element.P_Value;
         });
-        const result=await userClientAllocation.create(userId,outletId);
+        if(modificationType=="Create"){
+          //here the user id is the id
+          const result=await userClientAllocation.create(id,outletId);
         res.status(result['statusCode']).json(result['body']);  
+        }
+        else if(modificationType=="Delete"){
+          //here the userClientAllocation id is the id
+          const result=await userClientAllocation.remove(id);
+          res.status(result['statusCode']).json(result['body']);  
+        }
       }
     }
     else if(requestJson.RequestType=="Outlet Configurations"){
@@ -308,8 +317,12 @@ const theToken = req.headers.authorization.split(' ')[1];
           const result=await outlets.create(req.body.GUID,outletName,outletSalePoint,id);
           res.status(result['statusCode']).json(result['body']); 
         }
-        else{
+        else if(modificationType=='Update'){
           const result=await outlets.update(id,outletName,outletSalePoint);
+          res.status(result['statusCode']).json(result['body']); 
+        }
+        else if(modificationType=="Delete"){
+          const result=await outlets.remove(id);
           res.status(result['statusCode']).json(result['body']);  
         } 
       }
