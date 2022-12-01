@@ -10,7 +10,7 @@ async function get(id) {
 }
 async function getUsingMobileNo(mobile) {
   result = await db.query(
-    `SELECT * FROM UserDetails WHERE mobileNumber='${mobile}'`
+    `SELECT * FROM UserDetails WHERE MobileNumber=?`,[mobile]
   );
   const data = helper.emptyOrRows(result);
   return data[0];
@@ -95,6 +95,7 @@ async function remove(id) {
 module.exports = {
   get,
   getUsingMobileNoForWaiterRegistration,
+  getUsingMobileNo,
   create,
   update,
   remove,
