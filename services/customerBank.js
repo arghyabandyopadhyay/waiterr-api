@@ -10,7 +10,7 @@ async function get(id) {
 }
 async function getUsingMobileNo(mobile) {
   result = await db.query(
-    `SELECT * FROM CustomerDetails WHERE mobileNumber='${mobile}'`
+    `SELECT * FROM CustomerDetails WHERE mobileNumber=?`,[mobile]
   );
   const data = helper.emptyOrRows(result);
   return data[0];
