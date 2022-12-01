@@ -42,12 +42,12 @@ async function getAllWaiters(guid) {
   else return{statusCode:204,body:""};
 }
 
-async function create(userId, outletId,ucaRoleId) {
+async function createUserClientAllocationData(userId, outletId) {
   let message;
   let statusCode;
   try{
     const result = await db.query(
-      `INSERT INTO UserClientAllocation (UserId, OutletId, UCARoleId) VALUES (?, ?, ?);`,[userId,outletId,ucaRoleId]
+      `INSERT INTO UserClientAllocation (UserId, OutletId, UCARoleId) VALUES (?, ?, 1);`,[userId,outletId]
     );
     message = "Error in creating user client allocation";
     statusCode=500;
@@ -109,7 +109,7 @@ async function remove(id) {
 module.exports = {
   get,
   getAllWaiters,
-  create,
+  createUserClientAllocationData,
   update,
   remove,
 };
