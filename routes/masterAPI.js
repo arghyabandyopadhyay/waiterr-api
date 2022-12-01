@@ -108,12 +108,12 @@ const theToken = req.headers.authorization.split(' ')[1];
         res.json(await waiterrMenu.get(req.body.GUID,restaurantId));
       }
       else if(parameterList.length==2){
-        var clientMobile,restaurantId;
+        var userId,restaurantId;
         parameterList.forEach(element => {
-          if(element.P_Key=='clientId')clientMobile=element.P_Value;
+          if(element.P_Key=='userId')userId=element.P_Value;
           else if(element.P_Key=='restaurantId')restaurantId=element.P_Value;
         });
-        res.json(await waiterrMenu.getForClient(req.body.GUID,clientId,restaurantId));
+        res.json(await waiterrMenu.getForClient(req.body.GUID,userId,restaurantId));
       }
     }
     else if(requestJson.RequestType=="Waiterr Menu Edit"){
@@ -280,8 +280,8 @@ const theToken = req.headers.authorization.split(' ')[1];
         });
         if(modificationType=="Create"){
           //here the user id is the id
-          const result=await userClientAllocation.create(id,outletId);
-        res.status(result['statusCode']).json(result['body']);  
+          const result=await userClientAllocation.createUserClientAllocationData(id,outletId);
+          res.status(result['statusCode']).json(result['body']);  
         }
         else if(modificationType=="Delete"){
           //here the userClientAllocation id is the id
