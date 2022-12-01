@@ -21,12 +21,32 @@ async function getForMenuManagement(guid) {
   else return ;
 }
 
-async function getForClient(guid,clientId,restaurantId) {
+async function getForClient(guid,userId,restaurantId) {
   const result = await db.query(
-    `SELECT MenuItem.id,ItemImage,Item,ItemDescription,MenuGroup.id as StockGroupId,RateBeforeDiscount,Discount,Rate,TaxClassId,IsDiscountable,IsVeg,TaxRate,Tags,MenuItem.ClientId,Favourite,ImageUrl,StockGroup FROM MenuItem INNER JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id  INNER JOIN TaxClasses ON MenuItem.TaxClassId=TaxClasses.id WHERE MenuItem.restaurantId=? And MenuItem.clientId=?`,[restaurantId,guid]
+    `SELECT 
+    MenuItem.id,
+    ItemImage,
+    Item,
+    ItemDescription,
+    MenuGroup.id as StockGroupId,
+    RateBeforeDiscount,
+    Discount,
+    Rate,
+    TaxClassId,
+    IsDiscountable,
+    IsVeg,
+    TaxRate,
+    Tags,
+    MenuItem.ClientId,
+    IF((MenuItem.id in (SELECT menuId FROM Favourites WHERE userId = ?)), 1, 0) AS Favourite,
+    ImageUrl,
+    StockGroup 
+    FROM MenuItem 
+    INNER JOIN MenuGroup On MenuItem.StockGroupId=MenuGroup.id  
+    INNER JOIN TaxClasses ON MenuItem.TaxClassId=TaxClasses.id 
+    WHERE MenuItem.restaurantId=? And MenuItem.clientId=?`,[userId, restaurantId, guid]
   );
   const data = helper.emptyOrRows(result);
-
   if(data.length>0)return data;
   else return ;
 }
