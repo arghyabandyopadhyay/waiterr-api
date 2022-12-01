@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const customerDetail = require("../services/customerBank");
+const userDetails=require("../services/userDetails");
 const jwt = require('jsonwebtoken');
-const config=require('../config/config')
+const config=require('../config/config');
+const { result } = require("lodash");
 /* GET user detailss. */
 
 router.get("/", async function (req, res, next) {
@@ -19,7 +21,13 @@ router.get("/", async function (req, res, next) {
 const theToken = req.headers.authorization.split(' ')[1];
   try {
     jwt.verify(theToken, config.secretCode);
-    res.json(await customerDetail.getUsingMobileNo(req.query.mobile));
+    var result=await userDetails.getUsingMobileNo(req.query.mobile);
+    if(result==null){
+      result=await customerDetail.getUsingMobileNo(req.query.mobile);
+      result["DataSource"]='CustomerBank';
+    }
+    else result["DataSource"]='UserDetails';
+    res.status(200).json(result);
   } catch (err) {
     res.status(401).json({message:'Unauthorised Access'});
   }
