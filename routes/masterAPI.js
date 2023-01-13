@@ -150,15 +150,27 @@ const theToken = req.headers.authorization.split(' ')[1];
         const result=await waiterrMenuGroup.getForOutlet(req.body.GUID,outletId);
         res.json(result);
       }
-      else {
-        var outletId,stockGroup,imageUrl;
+      else if(parameterList.length==5){
+        var outletId,stockGroup,imageUrl,id,modificationType;
         parameterList.forEach(element => {
           if(element.P_Key=='OutletId')outletId=element.P_Value;
           else if(element.P_Key=='StockGroup')stockGroup=element.P_Value;
           else if(element.P_Key=='ImageUrl')imageUrl=element.P_Value;
+          else if(element.P_Key=='id')id=element.P_Value;
+          else if(element.P_Key=='ModificationType')modificationType=element.P_Value
         });
-        const result=await waiterrMenuGroup.create(req.body.GUID,outletId,stockGroup,imageUrl);
+        if(modificationType=='Create'){
+          const result=await waiterrMenuGroup.create(req.body.GUID,outletId,stockGroup,imageUrl);
         res.json(result['message']);
+        }
+        else if(modificationType=='Edit'){
+          const result=await waiterrMenuGroup.update(id,outletId,stockGroup,imageUrl);
+        res.json(result['message']);
+        }
+        else if(modificationType=='Delete'){
+          const result=await waiterrMenuGroup.remove(id);
+          res.json(result['message']);
+        }
       }
     }
     else if(requestJson.RequestType=="Tax Class"){
