@@ -271,16 +271,22 @@ const theToken = req.headers.authorization.split(' ')[1];
         res.status(result['statusCode']).json(result['body']);  
       } 
       //create a new waiter  
-      else if(parameterList.length==3){
-        var id,outletId,modificationType;
+      else if(parameterList.length==4){
+        var id,ucaRoleId,outletId,modificationType;
         parameterList.forEach(element => {
           if(element.P_Key=='id')id=element.P_Value;
+          else if(element.P_Key=='UCARoleId')ucaRoleId=element.P_Value;
           else if(element.P_Key=="OutletId")outletId=element.P_Value;
           else if(element.P_Key=="ModificationType")modificationType=element.P_Value;
         });
         if(modificationType=="Create"){
           //here the user id is the id
-          const result=await userClientAllocation.createUserClientAllocationData(id,outletId);
+          const result=await userClientAllocation.create(id,outletId,ucaRoleId);
+          res.status(result['statusCode']).json(result['body']);  
+        }
+        if(modificationType=="Edit"){
+          //here the userClientAllocationid is the id
+          const result=await userClientAllocation.update(id,outletId,ucaRoleId);
           res.status(result['statusCode']).json(result['body']);  
         }
         else if(modificationType=="Delete"){
