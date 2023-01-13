@@ -42,12 +42,12 @@ async function getAllWaiters(guid) {
   else return{statusCode:204,body:""};
 }
 
-async function createUserClientAllocationData(userId, outletId) {
+async function create(userId, outletId,ucaRoleId) {
   let message;
   let statusCode;
   try{
     const result = await db.query(
-      `INSERT INTO UserClientAllocation (UserId, OutletId, UCARoleId) VALUES (?, ?, 1);`,[userId,outletId]
+      `INSERT INTO UserClientAllocation (UserId, OutletId, UCARoleId) VALUES (?, ?, ?);`,[userId,outletId,ucaRoleId]
     );
     message = "Error in creating user client allocation";
     statusCode=500;
@@ -61,29 +61,28 @@ async function createUserClientAllocationData(userId, outletId) {
   }
   return {statusCode:statusCode,body:message};
 }
-
-async function update(id, userClientAllocation) {
-  const result = await db.query(
-    `UPDATE UserClientAllocation 
-    SET 
-    ClientName= '${userClientAllocation.Name}' ,
-    LogoUrl= '${userClientAllocation.LogoUrl}' ,
-    DataExchangeVia= ${userClientAllocation.DataExchangeVia} ,
-    DataExchangeUrl= ${userClientAllocation.DataExchangeUrl},
-    GUID= '${userClientAllocation.GUID}',
-    CompanyGUID= '${userClientAllocation.CompanyGUID}'
-    OutletName= '${userClientAllocation.OutletName}'
-    OutletSalePoint= '${userClientAllocation.OutletSalePoint}'
-    WHERE id = '${id}'`
-  );
-
-  let message = "Error in updating user client allocation data";
-
-  if (result.affectedRows) {
-    message = "User client allocation data updated successfully";
+async function update(id, outletId,ucaRoleId){
+  let message;
+  let statusCode;
+  try{
+    const result = await db.query(
+      `UPDATE UserClientAllocation 
+      SET 
+      OutletId=?,
+      UCARoleId=?
+      WHERE id =?`,[outletId,ucaRoleId,id]
+    );
+    message = "Error in creating user client allocation";
+    statusCode=500;
+    if (result.affectedRows) {
+      message = "Success";
+      statusCode=200;
+    }
+  }catch(err){
+    message=err.message;
+    statusCode=403;
   }
-
-  return { message };
+  return {statusCode:statusCode,body:message};
 }
 
 async function remove(id) {
@@ -109,7 +108,7 @@ async function remove(id) {
 module.exports = {
   get,
   getAllWaiters,
-  createUserClientAllocationData,
+  create,
   update,
   remove,
 };
