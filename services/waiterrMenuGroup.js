@@ -3,7 +3,7 @@ const helper = require("../helper");
 
 async function get(guid) {
   const result = await db.query(
-    `SELECT * FROM MenuGroup WHERE ClientId=?`,[guid]
+    `SELECT MenuGroup.id as id, ImageUrl, StockGroup, OutletId, OutletName FROM MenuGroup INNER JOIN Outlets ON MenuGroup.OutletId=Outlets.id WHERE ClientId=?`,[guid]
   );
   const data = helper.emptyOrRows(result);
 
@@ -12,10 +12,9 @@ async function get(guid) {
 }
 async function getForOutlet(guid,outletId) {
   const result = await db.query(
-    `SELECT * FROM MenuGroup WHERE ClientId=? AND OutletId=?`,[guid,outletId]
+    `SELECT MenuGroup.id as id, ImageUrl, StockGroup, OutletId, OutletName FROM MenuGroup INNER JOIN Outlets ON MenuGroup.OutletId=Outlets.id WHERE ClientId=? AND OutletId=?`,[guid,outletId]
   );
   const data = helper.emptyOrRows(result);
-
   if(data.length>0)return data;
   else return ;
 }
@@ -28,7 +27,7 @@ async function create(guid,outletId,stockGroup,imageUrl) {
     (?,?,?,?);`,[imageUrl,stockGroup,guid,outletId]
   );
 
-  let message = "Error in creating running order";
+  let message = "Error in creating stock group";
 
   if (result.affectedRows) {
     message = "Success";
@@ -37,27 +36,20 @@ async function create(guid,outletId,stockGroup,imageUrl) {
   return { message };
 }
 
-async function update(id, runningOrder) {
+async function update(id,outletId,stockGroup,imageUrl) {
   const result = await db.query(
-    `UPDATE RunningOrder 
+    `UPDATE MenuGroup 
     SET 
-    Name= '${runningOrder.Name}' ,
-    MobileNo= '${runningOrder.MobileNo}' ,
-    SalePointType= '${runningOrder.SalePointType}' ,
-    SalePointName= '${runningOrder.SalePointName}',
-    WaiterName= '${runningOrder.WaiterName}',
-    Amount= '${runningOrder.Amount}',
-    PAX= ${runningOrder.PAX},
-    ActiveSince= '${runningOrder.ActiveSince}',
-    BillPrinted= ${runningOrder.BillPrinted},
-    OutletName= '${runningOrder.OutletName}'
-    WHERE id = '${id}'`
+    ImageUrl=?,
+    StockGroup=?,
+    OutletId=?
+    WHERE id = ?`,[imageUrl,stockGroup,outletId,id]
   );
 
-  let message = "Error in updating user Details";
+  let message = "Error in updating stock group";
 
   if (result.affectedRows) {
-    message = "User Details updated successfully";
+    message = "Success";
   }
 
   return { message };
@@ -65,13 +57,13 @@ async function update(id, runningOrder) {
 
 async function remove(id) {
   const result = await db.query(
-    `DELETE FROM RunningOrder WHERE id='${id}'`
+    `DELETE FROM MenuGroup WHERE id='${id}'`
   );
 
-  let message = "Error in deleting running order";
+  let message = "Error in deleting stock group";
 
   if (result.affectedRows) {
-    message = "Running order deleted successfully";
+    message = "Success";
   }
 
   return { message };
