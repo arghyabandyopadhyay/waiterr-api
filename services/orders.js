@@ -3,6 +3,8 @@ const helper = require("../helper");
 const mysql = require("mysql2/promise");
 const config = require("../config/config");
 const commentForKotSuggestions=require("../services/commentForKotSuggestions");
+const runningOrder = require("../services/runningOrder");
+const maxTakeAway= require("../services/maxTakeAway");
 
 async function create(menuList,runningOrderId,runningOrderKotNumber,guid) {
   let message,statusCode;
@@ -72,8 +74,18 @@ async function remove(id) {
   return { message };
 }
 
+async function Calculation(res, requestJson){
+  const responseBody=(JSON.parse(requestJson.RequestBody));
+      const lastId=await runningOrder.create(responseBody,req.body.GUID);
+      const result=await create(responseBody.menuList,lastId.message,lastId.kotNumber,req.body.GUID);
+      if(result['statusCode']==200&&responseBody.SalePointType=="TAKE-AWAY"){
+        await maxTakeAway.updateLastTakeAway(parseInt(responseBody.SalePointName),responseBody.OutletId);
+      }
+      res.status(result['statusCode']).json(result['message']);
+}
 module.exports = {
   create,
   update,
   remove,
+  Calculation
 };
