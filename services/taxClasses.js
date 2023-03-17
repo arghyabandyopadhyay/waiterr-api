@@ -60,9 +60,35 @@ async function remove(id) {
   return { message };
 }
 
+async function TaxClassesCalculation(res, requestJson){
+  const parameterList=requestJson.ParameterList;
+      if(parameterList==null){
+        res.json(await get(req.body.GUID));
+      }
+      else if(parameterList.length==2){
+        var taxClass,taxRate;
+        parameterList.forEach(element => {
+          if(element.P_Key=='TaxClass')taxClass=element.P_Value;
+          else if(element.P_Key=='TaxRate')taxRate=element.P_Value;
+        });
+        const result=await create(req.body.GUID,taxClass,taxRate);
+        res.json(result['message']);
+      }
+      else if(parameterList.length==3){
+        var taxClass,taxRate,id;
+        parameterList.forEach(element => {
+          if(element.P_Key=='TaxClass')taxClass=element.P_Value;
+          else if(element.P_Key=='TaxRate')taxRate=element.P_Value;
+          else if(element.P_Key=='TaxId')id=element.P_Value;
+        });
+        const result=await update(id,taxClass,taxRate);
+        res.json(result['message']);
+      }
+}
 module.exports = {
   get,
   create,
   update,
   remove,
+  TaxClassesCalculation
 };
