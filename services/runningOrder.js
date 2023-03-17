@@ -151,6 +151,51 @@ async function remove(id) {
   return { message };
 }
 
+
+
+async function runningOrdersCalculation(res,requestJson){
+  console.log(requestJson);
+  if(requestJson.ParameterList==null){
+        res.json(await runningOrder.get(req.body.GUID));
+      }
+      else{
+        const parameterList=requestJson.ParameterList;
+        if(parameterList.length==2){
+          var waiterId, includePastOrder;
+          parameterList.forEach(element => {
+            if(element.P_Key=='WaiterId')waiterId=element.P_Value;
+            else if(element.P_Key=='IncludePastOrder')includePastOrder=element.P_Value;
+          });
+          res.json(await getForWaiterId(waiterId,includePastOrder));
+        }
+        else if(parameterList.length==1){
+          var runningOrderId;
+          parameterList.forEach(element=>{
+            if(element.P_Key=='RunningOrderId')runningOrderId=element.P_Value;
+          })
+          res.json(await terminate(runningOrderId));
+        }
+      }
+}
+
+async function activeSalePointCalculation(req, requestJson){
+  if(requestJson.ParameterList==null){
+    res.json(await runningOrder.get(req.body.GUID));
+  }
+  else{
+    const parameterList=requestJson.ParameterList;
+    var outlet;
+    var salePointType;
+    var salePointName;
+    parameterList.forEach(element => {
+      if(element.P_Key=='Outlet')outlet=element.P_Value;
+      else if(element.P_Key=='SalePointName')salePointName=element.P_Value;
+      else if(element.P_Key=='SalePointType')salePointType=element.P_Value;
+    });
+    res.json(await getForAddOrder(req.body.GUID,outlet,salePointName,salePointType));
+  }
+}
+
 module.exports = {
   get,
   getForWaiterId,
@@ -159,4 +204,6 @@ module.exports = {
   update,
   terminate,
   remove,
+  runningOrdersCalculation,
+  activeSalePointCalculation
 };
