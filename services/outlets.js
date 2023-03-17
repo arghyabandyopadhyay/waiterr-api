@@ -68,9 +68,47 @@ async function remove(id) {
   return {statusCode:statusCode,body:body};
 }
 
+async function Calculation(res, requestJson){
+  const parameterList=requestJson.ParameterList;
+      //get all outlets
+      if(parameterList==null){
+        const result=await get(req.body.GUID);
+        res.status(result['statusCode']).json(result['body']);  
+      } 
+      else if(parameterList.length==1){
+        var id;
+        parameterList.forEach(element => {
+          if(element.P_Key=='id')id=element.P_Value;
+        });
+        const result=await remove(id);
+        res.status(result['statusCode']).json(result['body']);  
+      }
+      else{
+        var outletName,outletSalePoint,id,modificationType;
+        parameterList.forEach(element => {
+          if(element.P_Key=='OutletName')outletName=element.P_Value;
+          else if(element.P_Key=='OutletSalePoint')outletSalePoint=element.P_Value;
+          else if(element.P_Key=='id')id=element.P_Value;
+          else if(element.P_Key=='ModificationType')modificationType=element.P_Value;
+        });
+        if(modificationType=='Create'){
+          const result=await create(req.body.GUID,outletName,outletSalePoint,id);
+          res.status(result['statusCode']).json(result['body']); 
+        }
+        else if(modificationType=='Update'){
+          const result=await update(id,outletName,outletSalePoint);
+          res.status(result['statusCode']).json(result['body']); 
+        }
+        else if(modificationType=="Delete"){
+          const result=await remove(id);
+          res.status(result['statusCode']).json(result['body']);  
+        } 
+      }
+}
 module.exports = {
   get,
   create,
   update,
   remove,
+  Calculation
 };
