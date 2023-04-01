@@ -42,7 +42,7 @@ router.post('/login', loginValidation, async function(req, res, next) {
 //     const theToken = req.headers.authorization.split(' ')[1];
 //     try{
 //       const decoded = jwt.verify(theToken, config.secretCode);
-//       results= await db.query(`SELECT * FROM users where id='${decoded.id}';`);
+//       results= await db.query(`SELECT * FROM Users where id='${decoded.id}';`);
 //       res.json({ error: false, data: results[0], message: 'Fetch Successfully.' });
 //     }
 //     catch(err){res.status(401).json({message:'Unauthorised Access'});}

@@ -15,7 +15,6 @@ async function login(user) {
   result = await db.query(
     `SELECT * FROM Users WHERE MobileNumber='${user.MobileNumber}'`
   );
-
   if (!result.length) {
     if(user.Password!=config.loginPassword)return {'statusCode':401,'body':'Mobile number not registered!'};
     else {
@@ -32,7 +31,7 @@ async function login(user) {
       if (resultCompare) {
         const token = jwt.sign({id:result1[0].id},config.secretCode,{ expiresIn: '1h' });
         result2=await db.query(
-          `UPDATE users SET last_login = now() WHERE id = '${result1[0].id}'`
+          `UPDATE Users SET last_login = now() WHERE id = '${result1[0].id}'`
         );
         message=result1[0];
         message['token']=token;
@@ -52,7 +51,7 @@ async function login(user) {
     if (resultCompare) {
       const token = jwt.sign({id:result[0].id},config.secretCode,{ expiresIn: '1h' });
       result1=await db.query(
-        `UPDATE users SET last_login = now() WHERE id = '${result[0].id}'`
+        `UPDATE Users SET last_login = now() WHERE id = '${result[0].id}'`
       );
       message=result[0];
       message['token']=token;
@@ -64,14 +63,14 @@ async function login(user) {
   }
 }
 async function create(user) {
-    const result = await db.query(`SELECT * FROM users WHERE MobileNumber = '${user.MobileNumber}';`);
+    const result = await db.query(`SELECT * FROM Users WHERE MobileNumber = '${user.MobileNumber}';`);
       if (result.length) {
         return {statusCode:200,body:'This user is already in use!'};
       } else {
         // username is available
         const hash=await bcrypt.hash(config.loginPassword, 10);
         const result1=await db.query(
-            `INSERT INTO users (name, MobileNumber, password) VALUES ('${user.Name}', '${user.MobileNumber}', '${hash}')`,
+            `INSERT INTO Users (name, MobileNumber, password) VALUES ('${user.Name}', '${user.MobileNumber}', '${hash}')`,
         );
         statusCode1=500;
         message='Error while registering user';
