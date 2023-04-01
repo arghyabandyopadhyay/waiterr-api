@@ -105,10 +105,53 @@ async function remove(id) {
   return {statusCode:statusCode,body:message};
 }
 
+async function Calculation(res, requestJson){
+  const parameterList=requestJson.ParameterList;
+      //get all waiters
+      if(parameterList==null){
+        const result=await userClientAllocation.getAllWaiters(req.body.GUID);
+        res.status(result['statusCode']).json(result['body']);  
+      } 
+      //get waiter detail
+      else if(parameterList.length==1){
+        var mobileNo;
+        parameterList.forEach(element => {
+          if(element.P_Key=='MobileNo')mobileNo=element.P_Value;
+        });
+        const result=await userDetails.getUsingMobileNoForWaiterRegistration(mobileNo);
+        res.status(result['statusCode']).json(result['body']);  
+      } 
+      //create a new waiter  
+      else if(parameterList.length==4){
+        var id,ucaRoleId,outletId,modificationType;
+        parameterList.forEach(element => {
+          if(element.P_Key=='id')id=element.P_Value;
+          else if(element.P_Key=='UCARoleId')ucaRoleId=element.P_Value;
+          else if(element.P_Key=="OutletId")outletId=element.P_Value;
+          else if(element.P_Key=="ModificationType")modificationType=element.P_Value;
+        });
+        if(modificationType=="Create"){
+          //here the user id is the id
+          const result=await create(id,outletId,ucaRoleId);
+          res.status(result['statusCode']).json(result['body']);  
+        }
+        if(modificationType=="Edit"){
+          //here the userClientAllocationid is the id
+          const result=await update(id,outletId,ucaRoleId);
+          res.status(result['statusCode']).json(result['body']);  
+        }
+        else if(modificationType=="Delete"){
+          //here the userClientAllocation id is the id
+          const result=await remove(id);
+          res.status(result['statusCode']).json(result['body']);  
+        }
+      }
+}
 module.exports = {
   get,
   getAllWaiters,
   create,
   update,
   remove,
+  Calculation
 };

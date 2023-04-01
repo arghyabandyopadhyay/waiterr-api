@@ -149,6 +149,50 @@ async function remove(id) {
   return { message };
 }
 
+async function waiterMenuCalculation(res, requestJson){
+  const parameterList=requestJson.ParameterList;
+      if(parameterList==null){
+        res.json(await waiterrMenu.getForMenuManagement(req.body.GUID));
+      }
+      else if(parameterList.length==1){
+        var restaurantId;
+        parameterList.forEach(element => {
+          if(element.P_Key=='restaurantId')restaurantId=element.P_Value;
+        });
+        res.json(await waiterrMenu.get(req.body.GUID,restaurantId));
+      }
+      else if(parameterList.length==2){
+        var userId,restaurantId;
+        parameterList.forEach(element => {
+          if(element.P_Key=='userId')userId=element.P_Value;
+          else if(element.P_Key=='restaurantId')restaurantId=element.P_Value;
+        });
+        res.json(await waiterrMenu.getForClient(req.body.GUID,userId,restaurantId));
+      }
+}
+
+async function waiterMenuEditCalculation(res, requestJson){
+  const parameterList=requestJson.ParameterList;
+      console.log(parameterList.length);
+      if(parameterList.length==1){
+        var menuItem;
+        parameterList.forEach(element => {
+          if(element.P_Key=='menuItem')menuItem=JSON.parse(element.P_Value);
+        });
+        const result=await create(req.body.GUID,menuItem);
+        res.json(result['message']);
+      }
+      else if(parameterList.length==2){
+        var menuItem,id;
+        parameterList.forEach(element => {
+          if(element.P_Key=='menuItem')menuItem=JSON.parse(element.P_Value);
+          if(element.P_Key=='id')id=element.P_Value;
+        });
+        const result=await update(menuItem,id);
+        res.json(result['message']);
+      }
+}
+
 module.exports = {
   get,
   getForClient,
@@ -156,4 +200,6 @@ module.exports = {
   create,
   update,
   remove,
+  waiterMenuCalculation,
+  waiterMenuEditCalculation
 };

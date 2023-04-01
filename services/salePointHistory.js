@@ -66,8 +66,52 @@ async function approveOrders(forApproval,forAggregate,runningOrderId,guid,kotNum
   
 }
 
+async function Calculation(res, requestJson){
+  const parameterList=requestJson.ParameterList;
+      if(parameterList!=null){
+        if(parameterList.length==3){
+          var salePointType, salePointName, outletId;
+          parameterList.forEach(element => {
+            if(element.P_Key=='SalePointType')salePointType=element.P_Value;
+            else if(element.P_Key=='SalePointName')salePointName=element.P_Value;
+            else if(element.P_Key=='OutletId')outletId=element.P_Value;
+          });
+          const result=await salePointHistory.get(salePointType,salePointName,outletId);
+          res.status(result['statusCode']).json(result['body']);
+        }
+        else if(parameterList.length==1){
+          var approvalType;
+          parameterList.forEach(element => {
+            if(element.P_Key=='ApprovalType')approvalType=element.P_Value;
+          });
+
+          const result=await salePointHistory.getForApproval(approvalType,req.body.GUID);
+          res.status(result['statusCode']).json(result['body']);
+        }
+      }
+      else{
+        
+      }
+}
+
+async function CalculationOrderApproval(res, requestJson){
+  const parameterList=requestJson.ParameterList;
+        var forApproval, forAggregate, runningOrderId, kotNumber,approvalType,allProcessed;
+        parameterList.forEach(element => {
+          if(element.P_Key=='ForApproval')forApproval=element.P_Value;
+          else if(element.P_Key=="ForAggregate")forAggregate=element.P_Value;
+          else if(element.P_Key=='RunningOrderId')runningOrderId=element.P_Value;
+          else if(element.P_Key=='KotNumber')kotNumber=element.P_Value;
+          else if(element.P_Key=='ApprovalType')approvalType=element.P_Value;
+          else if(element.P_Key=='AllProcessed')allProcessed=element.P_Value;
+        });
+        const result=await approveOrders(forApproval,forAggregate,runningOrderId,req.body.GUID,kotNumber,approvalType,allProcessed);
+        res.status(result['statusCode']).json(result['message']);
+}
 module.exports = {
   get,
   getForApproval,
-  approveOrders
+  approveOrders,
+  Calculation,
+  CalculationOrderApproval
 };

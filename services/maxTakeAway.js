@@ -89,10 +89,22 @@ async function remove(id) {
   return { message };
 }
 
+
+async function Calculation(res, requestJson){
+  const parameterList=requestJson.ParameterList;
+        var outletId,date;
+        parameterList.forEach(element => {
+          if(element.P_Key=='outletId')outletId=element.P_Value;
+          else if(element.P_Key=='currentDate')date=element.P_Value;
+        });
+        res.json(await getLastTakeAway(outletId,date));
+}
+
 module.exports = {
   getLastTakeAway,
   create,
   update,
   updateLastTakeAway,
   remove,
+  Calculation
 };

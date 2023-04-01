@@ -56,8 +56,18 @@ async function remove(id) {
   return {statusCode:statusCode,body:message};
 }
 
+async function Calculation(res, requestJson){
+  const parameterList=requestJson.ParameterList;
+        var menuItemId;
+        parameterList.forEach(element => {
+          if(element.P_Key=='menuItemId')menuItemId=element.P_Value;
+        });
+        const result=await getUsingMenuItemId(menuItemId);
+      res.status(result['statusCode']).json(result['body']);
+}
 module.exports = {
   getUsingMenuItemId,
   create,
   remove,
+  Calculation
 };
