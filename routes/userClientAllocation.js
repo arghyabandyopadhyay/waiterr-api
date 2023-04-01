@@ -22,7 +22,6 @@ const theToken = req.headers.authorization.split(' ')[1];
     result=await userClientAllocation.get(req.query.id);
     res.status(result['statusCode']).json(result['body']);
   } catch (err) {
-    console.log(err);
     res.status(401).json({message:'Unauthorised Access'});
   }
 });

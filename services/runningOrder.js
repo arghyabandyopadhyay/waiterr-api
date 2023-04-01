@@ -12,7 +12,6 @@ async function get(guid) {
 }
 
 async function getForWaiterId(waiterId,includePastOrder) {
-  console.log(includePastOrder?'ORDER BY isTerminated':'isTerminated=0 ORDER BY ActiveSince Desc');
   const result = await db.query(
     `SELECT RunningOrder.id, 
     isTerminated, 
@@ -36,7 +35,6 @@ async function getForWaiterId(waiterId,includePastOrder) {
     WHERE WaiterId=? ${includePastOrder?'ORDER BY isTerminated':'AND isTerminated=0 ORDER BY ActiveSince Desc'}`,[waiterId]
   );
   const data = helper.emptyOrRows(result);
-    console.log(result);
   if(data.length>0)return data;
   else return ;
 }

@@ -9,7 +9,6 @@ async function get(id) {
   return data[0];
 }
 async function getUsingMobileNo(mobile) {
-  console.log(mobile);
   result = await db.query(
     `SELECT * FROM UserDetails WHERE MobileNumber=?`,[mobile]
   );

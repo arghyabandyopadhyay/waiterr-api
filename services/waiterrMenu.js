@@ -94,7 +94,6 @@ async function create(guid,menuItem) {
 }
 
 async function update(menuItem,id) {
-  console.log(id);
   const result = await db.query(
     `UPDATE MenuItem 
       SET 
@@ -124,8 +123,6 @@ async function update(menuItem,id) {
       id
     ]
   );
-
-  console.log(result);
   let message = "Error in updating Menu Item";
 
   if (result.affectedRows) {
