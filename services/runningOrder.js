@@ -155,7 +155,7 @@ async function remove(id) {
 
 async function runningOrdersCalculation(res,req,requestJson){
   if(requestJson.ParameterList==null){
-        res.json(await runningOrder.get(req.body.GUID));
+        res.json(await get(req.body.GUID));
       }
       else{
         const parameterList=requestJson.ParameterList;
