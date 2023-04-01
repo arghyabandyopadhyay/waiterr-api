@@ -56,7 +56,7 @@ async function remove(id) {
   return {statusCode:statusCode,body:message};
 }
 
-async function Calculation(res, requestJson){
+async function Calculation(res,req, requestJson){
   const parameterList=requestJson.ParameterList;
         var menuItemId;
         parameterList.forEach(element => {

@@ -149,17 +149,17 @@ async function remove(id) {
   return { message };
 }
 
-async function waiterMenuCalculation(res, requestJson){
+async function waiterMenuCalculation(res,req, requestJson){
   const parameterList=requestJson.ParameterList;
       if(parameterList==null){
-        res.json(await waiterrMenu.getForMenuManagement(req.body.GUID));
+        res.json(await getForMenuManagement(req.body.GUID));
       }
       else if(parameterList.length==1){
         var restaurantId;
         parameterList.forEach(element => {
           if(element.P_Key=='restaurantId')restaurantId=element.P_Value;
         });
-        res.json(await waiterrMenu.get(req.body.GUID,restaurantId));
+        res.json(await get(req.body.GUID,restaurantId));
       }
       else if(parameterList.length==2){
         var userId,restaurantId;
@@ -167,13 +167,12 @@ async function waiterMenuCalculation(res, requestJson){
           if(element.P_Key=='userId')userId=element.P_Value;
           else if(element.P_Key=='restaurantId')restaurantId=element.P_Value;
         });
-        res.json(await waiterrMenu.getForClient(req.body.GUID,userId,restaurantId));
+        res.json(await getForClient(req.body.GUID,userId,restaurantId));
       }
 }
 
-async function waiterMenuEditCalculation(res, requestJson){
+async function waiterMenuEditCalculation(res,req, requestJson){
   const parameterList=requestJson.ParameterList;
-      console.log(parameterList.length);
       if(parameterList.length==1){
         var menuItem;
         parameterList.forEach(element => {

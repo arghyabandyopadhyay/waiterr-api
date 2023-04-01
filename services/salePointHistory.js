@@ -66,7 +66,7 @@ async function approveOrders(forApproval,forAggregate,runningOrderId,guid,kotNum
   
 }
 
-async function Calculation(res, requestJson){
+async function Calculation(res,req, requestJson){
   const parameterList=requestJson.ParameterList;
       if(parameterList!=null){
         if(parameterList.length==3){
@@ -76,7 +76,7 @@ async function Calculation(res, requestJson){
             else if(element.P_Key=='SalePointName')salePointName=element.P_Value;
             else if(element.P_Key=='OutletId')outletId=element.P_Value;
           });
-          const result=await salePointHistory.get(salePointType,salePointName,outletId);
+          const result=await get(salePointType,salePointName,outletId);
           res.status(result['statusCode']).json(result['body']);
         }
         else if(parameterList.length==1){
@@ -85,7 +85,7 @@ async function Calculation(res, requestJson){
             if(element.P_Key=='ApprovalType')approvalType=element.P_Value;
           });
 
-          const result=await salePointHistory.getForApproval(approvalType,req.body.GUID);
+          const result=await getForApproval(approvalType,req.body.GUID);
           res.status(result['statusCode']).json(result['body']);
         }
       }
@@ -94,7 +94,7 @@ async function Calculation(res, requestJson){
       }
 }
 
-async function CalculationOrderApproval(res, requestJson){
+async function CalculationOrderApproval(res,req, requestJson){
   const parameterList=requestJson.ParameterList;
         var forApproval, forAggregate, runningOrderId, kotNumber,approvalType,allProcessed;
         parameterList.forEach(element => {

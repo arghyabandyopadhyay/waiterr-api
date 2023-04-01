@@ -74,7 +74,7 @@ async function remove(id) {
   return { message };
 }
 
-async function Calculation(res, requestJson){
+async function Calculation(res,req, requestJson){
   const responseBody=(JSON.parse(requestJson.RequestBody));
       const lastId=await runningOrder.create(responseBody,req.body.GUID);
       const result=await create(responseBody.menuList,lastId.message,lastId.kotNumber,req.body.GUID);

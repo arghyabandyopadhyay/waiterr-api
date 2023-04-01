@@ -68,7 +68,7 @@ async function remove(id) {
   return {statusCode:statusCode,body:body};
 }
 
-async function Calculation(res, requestJson){
+async function Calculation(res,req, requestJson){
   const parameterList=requestJson.ParameterList;
       //get all outlets
       if(parameterList==null){

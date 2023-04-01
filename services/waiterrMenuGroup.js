@@ -69,7 +69,7 @@ async function remove(id) {
   return { message };
 }
 
-async function waiterMenuGroupCalculation(res, requestJson){
+async function waiterMenuGroupCalculation(res,req, requestJson){
   const parameterList=requestJson.ParameterList;
       if(parameterList==null){
         res.json(await get(req.body.GUID));

@@ -60,7 +60,7 @@ async function remove(id) {
   return { message };
 }
 
-async function TaxClassesCalculation(res, requestJson){
+async function TaxClassesCalculation(res,req, requestJson){
   const parameterList=requestJson.ParameterList;
       if(parameterList==null){
         res.json(await get(req.body.GUID));

@@ -153,8 +153,7 @@ async function remove(id) {
 
 
 
-async function runningOrdersCalculation(res,requestJson){
-  console.log(requestJson);
+async function runningOrdersCalculation(res,req,requestJson){
   if(requestJson.ParameterList==null){
         res.json(await runningOrder.get(req.body.GUID));
       }
@@ -178,7 +177,7 @@ async function runningOrdersCalculation(res,requestJson){
       }
 }
 
-async function activeSalePointCalculation(req, requestJson){
+async function activeSalePointCalculation(res, req, requestJson){
   if(requestJson.ParameterList==null){
     res.json(await runningOrder.get(req.body.GUID));
   }

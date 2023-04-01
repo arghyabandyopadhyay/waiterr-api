@@ -90,7 +90,7 @@ async function remove(id) {
 }
 
 
-async function Calculation(res, requestJson){
+async function Calculation(res,req, requestJson){
   const parameterList=requestJson.ParameterList;
         var outletId,date;
         parameterList.forEach(element => {

@@ -1,5 +1,6 @@
 const db = require("./db");
 const helper = require("../helper");
+const userDetails=require("../services/userDetails");
 
 async function get(userId) {
   result = await db.query(
@@ -105,11 +106,11 @@ async function remove(id) {
   return {statusCode:statusCode,body:message};
 }
 
-async function Calculation(res, requestJson){
+async function Calculation(res,req, requestJson){
   const parameterList=requestJson.ParameterList;
       //get all waiters
       if(parameterList==null){
-        const result=await userClientAllocation.getAllWaiters(req.body.GUID);
+        const result=await getAllWaiters(req.body.GUID);
         res.status(result['statusCode']).json(result['body']);  
       } 
       //get waiter detail

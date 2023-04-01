@@ -32,45 +32,44 @@ const theToken = req.headers.authorization.split(' ')[1];
   try {
     jwt.verify(theToken, config.secretCode);
     const requestJson=JSON.parse(req.body.RequestJSON);
-    console.log(requestJson);
     if(requestJson.RequestType=="Running Orders"){
-      await runningOrder.runningOrdersCalculation(res,requestJson);
+      await runningOrder.runningOrdersCalculation(res,req,requestJson);
     }
     else if(requestJson.RequestType=="Active Sale Point"){
-      await runningOrder.activeSalePointCalculation(res,requestJson);
+      await runningOrder.activeSalePointCalculation(res,req,requestJson);
     }
     else if(requestJson.RequestType=="Waiterr Menu"){
-      await waiterrMenu.waiterMenuCalculation(res, requestJson);
+      await waiterrMenu.waiterMenuCalculation(res,req, requestJson);
     }
     else if(requestJson.RequestType=="Waiterr Menu Edit"){
-      await waiterrMenu.waiterMenuEditCalculation(res, requestJson);
+      await waiterrMenu.waiterMenuEditCalculation(res,req, requestJson);
     }
     else if(requestJson.RequestType=="Waiterr Menu Group"){
-      await waiterrMenuGroup.waiterMenuGroupCalculation(res, requestJson);
+      await waiterrMenuGroup.waiterMenuGroupCalculation(res,req, requestJson);
     }
     else if(requestJson.RequestType=="Tax Class"){
-      await taxClasses.TaxClassesCalculation(res, requestJson);
+      await taxClasses.TaxClassesCalculation(res,req, requestJson);
     }
     else if(requestJson.RequestType=="Place Order"){
-      await orders.Calculation(res, requestJson);
+      await orders.Calculation(res,req, requestJson);
     }
     else if(requestJson.RequestType=="Max TakeAway"){
-      await maxTakeAway.Calculation(res, requestJson);
+      await maxTakeAway.Calculation(res,req, requestJson);
     }
     else if(requestJson.RequestType=="Comment For KOT"){
-      await commentForKotSuggestions.Calculation(res, requestJson);
+      await commentForKotSuggestions.Calculation(res,req, requestJson);
     }
     else if(requestJson.RequestType=="Sale Point History"){
-      await salePointHistory.Calculation(res, requestJson);
+      await salePointHistory.Calculation(res,req, requestJson);
     }
     else if(requestJson.RequestType=="Order Approval"){
-      await salePointHistory.CalculationOrderApproval(res, requestJson);
+      await salePointHistory.CalculationOrderApproval(res,req, requestJson);
     }
     else if(requestJson.RequestType=="Waiters"){
-      await userClientAllocation.Calculation(res, requestJson);
+      await userClientAllocation.Calculation(res,req, requestJson);
     }
     else if(requestJson.RequestType=="Outlet Configurations"){
-      await outlets.Calculation(res, requestJson);
+      await outlets.Calculation(res,req, requestJson);
     }
     // res.json(await runningOrder.create(req.body));
   } catch (err) {
