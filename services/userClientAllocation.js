@@ -76,7 +76,7 @@ async function update(id, outletId,ucaRoleId){
     message = "Error in creating user client allocation";
     statusCode=500;
     if (result.affectedRows) {
-      message = "Success";
+      message = "user client allocation data updated";
       statusCode=200;
     }
   }catch(err){
