@@ -52,5 +52,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
-  console.log(`Waiterr api app listening at http://165.227.145.73:${port}`);
+  console.log(`Waiterr api app listening at http://127.0.0.1:${port}`);
 });
