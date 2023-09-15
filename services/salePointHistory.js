@@ -3,7 +3,7 @@ const helper = require("../helper");
 
 async function get(salePointType, salePointName, outletId) {
   const result = await db.query(
-    `SELECT KotNumber, SalePointType, SalePointName, Item, Quantity, Rate, isDiscountable AS Discountable, Discount AS DiscountPercent, TaxRate, OrderPlaced, OrderApproved, OrderPrepared, OrderProcessed From Orders INNER JOIN RunningOrder ON Orders.RunningOrderId=RunningOrder.id INNER JOIN MenuItem ON Orders.ItemId=MenuItem.id INNER JOIN TaxClasses ON TaxClasses.id=MenuItem.TaxClassId WHERE SalePointType=? AND SalePointName=? AND OutletId=? ORDER BY KotNumber`,[salePointType, salePointName, outletId]
+    `SELECT KotNumber, SalePointType, SalePointName, Item, Quantity, Rate, isDiscountable AS Discountable, Discount AS DiscountPercent, TaxRate, OrderPlaced, OrderApproved, OrderPrepared, OrderProcessed From Orders INNER JOIN RunningOrder ON Orders.RunningOrderId=RunningOrder.id INNER JOIN MenuItem ON Orders.ItemId=MenuItem.id INNER JOIN TaxClasses ON TaxClasses.id=MenuItem.TaxClassId WHERE SalePointType=? AND SalePointName=? AND OutletId=? AND RunningOrder.isTerminated=0 ORDER BY KotNumber`,[salePointType, salePointName, outletId]
   );
   const data = helper.emptyOrRows(result);
   if(data.length>0)return {statusCode:200,body:data};
@@ -67,6 +67,7 @@ async function approveOrders(forApproval,forAggregate,runningOrderId,guid,kotNum
 }
 
 async function Calculation(res,req, requestJson){
+  console.log(requestJson);
   const parameterList=requestJson.ParameterList;
       if(parameterList!=null){
         if(parameterList.length==3){

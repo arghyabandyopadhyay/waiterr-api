@@ -19,16 +19,17 @@ async function getUsingMobileNo(mobile) {
 async function create(customerDetail) {
   let message;
   let statusCode;
+  console.log('customerBank create args:',customerDetail);
   try{
     const result = await db.query(
-      `INSERT INTO CustomerDetails (Name, MobileNumber) VALUES ("${customerDetail.Name}", "${customerDetail.MobileNumber}");`
+      `INSERT INTO CustomerDetails (Name, MobileNumber) VALUES ("${customerDetail.name}", "${customerDetail.mobileNumber}");`
     );
-    
-
+    console.log('query result',result);
     message = "Error in creating customer details";
     statusCode=500;
     if (result.affectedRows) {
-      let customerDetail1=await getUsingMobileNo(customerDetail.MobileNumber);
+      console.log('Rows affected:',result.affectedRows);
+      let customerDetail1=await getUsingMobileNo(customerDetail.mobileNumber);
       message = customerDetail1;
       statusCode=200;
     }

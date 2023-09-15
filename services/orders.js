@@ -7,13 +7,14 @@ const runningOrder = require("../services/runningOrder");
 const maxTakeAway= require("../services/maxTakeAway");
 
 async function create(menuList,runningOrderId,runningOrderKotNumber,guid) {
+  console.log(menuList, runningOrderId, runningOrderKotNumber, guid);
   let message,statusCode;
   const pool = mysql.createPool(config.db);
 
   await pool.getConnection()
     .then(async connection => {
         try {
-          await connection.query('START TRANSACTION');
+          await connection.beginTransaction();
           for(var menuListVal of menuList){
             await connection.query('INSERT INTO Orders (ItemId,Quantity,CommentForKOT,runningOrderId,KotNumber,clientId) VALUES (?,?,?,?,?,?)', [
               menuListVal.ItemID, menuListVal.Quantity, menuListVal.CommentForKOT,  runningOrderId,runningOrderKotNumber, guid]);
@@ -26,9 +27,11 @@ async function create(menuList,runningOrderId,runningOrderKotNumber,guid) {
           message = 'success';
           statusCode=200;
       } catch (error) {
+        await connection.rollback();
+        connection.release();
+        console.log(error);
         message = "Error in creating order";
         statusCode=403;
-        connection.release();
       }
     });
   return {statusCode:statusCode,message:message };

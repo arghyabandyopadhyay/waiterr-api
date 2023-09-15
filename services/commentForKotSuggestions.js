@@ -22,6 +22,7 @@ async function getUsingMenuItemId(menuItemId) {
 }
 
 async function create(commentForKOT) {
+  if(commentForKOT==null||commentForKOT=="")return {statusCode:200,body:""}
   let message;
   let statusCode;
   try{

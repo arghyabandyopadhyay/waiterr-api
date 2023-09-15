@@ -24,22 +24,27 @@ const theToken = req.headers.authorization.split(' ')[1];
     var result=await userDetails.getUsingMobileNo(req.query.mobile);
     if(result==null){
       result=await customerDetail.getUsingMobileNo(req.query.mobile);
-      result["DataSource"]='CustomerBank';
+      if(result!=null){
+        result["DataSource"]='CustomerBank';
+      }
     }
     else result["DataSource"]='UserDetails';
     res.status(200).json(result);
   } catch (err) {
-    res.status(401).json({message:'Unauthorised Access'});
+    console.log(err)
+    res.status(500).json({message:'Internal server error'});
   }
 });
 
 /* POST user details */
 router.post("/", async function (req, res, next) {
+  console.log('requested post customerBank/');
   if(
     !req.headers.authorization ||
     !req.headers.authorization.startsWith('Bearer') ||
     !req.headers.authorization.split(' ')[1]
   ){
+    console.log('Please provide the token')
     return res.status(422).json({
         message: "Please provide the token",
     });
@@ -48,9 +53,13 @@ router.post("/", async function (req, res, next) {
 const theToken = req.headers.authorization.split(' ')[1];
   try {
     jwt.verify(theToken, config.secretCode);
-    result=await customerDetail.create(req.body);
+    console.log('jwt verified');
+    var result=await customerDetail.create(req.body);
+    result['body']["DataSource"]='CustomerBank';
+    console.log('response:', result);
     res.status(result['statusCode']).json(result['body']);
   } catch (err) {
+    console.log('error occured:', err);
     res.status(401).json({message:'Unauthorised Access'});
   }
 });

@@ -5,6 +5,7 @@ var connection=null;
 async function query(sql, params) {
   if(connection==null)connection=await mysql.createConnection(config.db);
   const [results] = await connection.execute(sql, params);
+  console.log(sql, results);
   return results;
 }
 
