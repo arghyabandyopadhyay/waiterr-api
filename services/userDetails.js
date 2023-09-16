@@ -1,5 +1,6 @@
 const db = require("./db");
 const helper = require("../helper");
+const customerBank=require("../services/customerBank.js");
 
 async function get(id) {
   result = await db.query(
@@ -46,6 +47,9 @@ async function create(userDetails) {
       await db.query(
         `UPDATE Users SET UID='${userDetailData['id']}' WHERE id = ${userDetails.id}`
       );
+      
+      var result1=await customerBank.updateGUIDForMobileNumber(userDetails.Name, userDetails.MobileNumber,userDetailData['id']);
+      
       message = userDetailData;
       statusCode=200;
     }

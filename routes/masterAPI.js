@@ -31,6 +31,7 @@ router.post("/", async function (req, res, next) {
 const theToken = req.headers.authorization.split(' ')[1];
   try {
     jwt.verify(theToken, config.secretCode);
+    console.log(req.body.RequestJSON);
     const requestJson=JSON.parse(req.body.RequestJSON);
     if(requestJson.RequestType=="Running Orders"){
       await runningOrder.runningOrdersCalculation(res,req,requestJson);

@@ -64,6 +64,28 @@ async function update(id, customerDetail) {
   return {statusCode:statusCode,body:message};
 }
 
+async function updateGUIDForMobileNumber(userName, mobileNumber, id) {
+  console.log(userName, mobileNumber, id);
+  let message,statusCode;
+  try{
+      const result = await db.query(
+          `UPDATE CustomerDetails SET id=?, Name=? WHERE MobileNumber=?`,[id,userName,mobileNumber]
+      );
+
+  message = "Error in updating customer details";
+
+  if (result.affectedRows) {
+      statusCode=200;
+      message = "Customer id Details updated successfully";
+}}catch(err){
+  message=err.message;
+  statusCode=403;
+}
+
+return {statusCode:statusCode,body:message};
+}
+
+
 async function remove(id) {
   const result = await db.query(
     `DELETE FROM CustomerDetails WHERE id='${id}'`
@@ -83,5 +105,6 @@ module.exports = {
   getUsingMobileNo,
   create,
   update,
+  updateGUIDForMobileNumber,
   remove,
 };

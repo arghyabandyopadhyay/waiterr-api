@@ -5,8 +5,9 @@ const config = require("../config/config");
 const commentForKotSuggestions=require("../services/commentForKotSuggestions");
 const runningOrder = require("../services/runningOrder");
 const maxTakeAway= require("../services/maxTakeAway");
+const favourites= require("../services/favourites");
 
-async function create(menuList,runningOrderId,runningOrderKotNumber,guid) {
+async function create(menuList,runningOrderId,runningOrderKotNumber,guid,userId) {
   console.log(menuList, runningOrderId, runningOrderKotNumber, guid);
   let message,statusCode;
   const pool = mysql.createPool(config.db);
@@ -21,6 +22,7 @@ async function create(menuList,runningOrderId,runningOrderKotNumber,guid) {
             if(menuListVal.CommentForKOTId==null){
               await commentForKotSuggestions.create({comment:menuListVal.CommentForKOT,menuItemId:menuListVal.ItemID});
             }
+            await favourites.create(userId,menuListVal.ItemID);
           }
           await connection.commit();
           connection.release();
@@ -80,7 +82,7 @@ async function remove(id) {
 async function Calculation(res,req, requestJson){
   const responseBody=(JSON.parse(requestJson.RequestBody));
       const lastId=await runningOrder.create(responseBody,req.body.GUID);
-      const result=await create(responseBody.menuList,lastId.message,lastId.kotNumber,req.body.GUID);
+      const result=await create(responseBody.menuList,lastId.message,lastId.kotNumber,req.body.GUID, responseBody.CustomerId);
       if(result['statusCode']==200&&responseBody.SalePointType=="TAKE-AWAY"){
         await maxTakeAway.updateLastTakeAway(parseInt(responseBody.SalePointName),responseBody.OutletId);
       }
