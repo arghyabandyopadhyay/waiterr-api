@@ -53,8 +53,9 @@ async function update(id, outletName, outletSalePoint) {
 }
 
 async function remove(id) {
+  console.log(id);
   const result = await db.query(
-    `DELETE FROM Outlets WHERE id='${id}'`
+    `DELETE FROM Outlets WHERE id=?`,[id]
   );
 
   statusCode=404;
