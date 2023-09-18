@@ -90,7 +90,7 @@ async function update(id, userDetails) {
     MobileNumber= '${userDetails.MobileNumber}' ,
     RoleId= ${userDetails.RoleId} ,
     IsActive= ${userDetails.IsActive},
-    ProfileURL= '${userDetails.ProfileUrl}',
+    ProfileUrl= '${userDetails.ProfileUrl}',
     deviceToken= '${userDetails.DeviceToken}'
     WHERE id = '${id}'`
   );
