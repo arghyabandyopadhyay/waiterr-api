@@ -1,5 +1,6 @@
 const db = require("./db");
 const helper = require("../helper");
+const logger = require("../logger");
 
 
 async function get(guid,restaurantId) {
@@ -156,7 +157,9 @@ async function waiterMenuCalculation(res,req, requestJson){
         parameterList.forEach(element => {
           if(element.P_Key=='restaurantId')restaurantId=element.P_Value;
         });
-        res.json(await get(req.body.GUID,restaurantId));
+        var responseForWaiterrMenu=await get(req.body.GUID,restaurantId);
+        logger.info(responseForWaiterrMenu);
+        res.json(responseForWaiterrMenu);
       }
       else if(parameterList.length==2){
         var userId,restaurantId;
@@ -164,7 +167,9 @@ async function waiterMenuCalculation(res,req, requestJson){
           if(element.P_Key=='userId')userId=element.P_Value;
           else if(element.P_Key=='restaurantId')restaurantId=element.P_Value;
         });
-        res.json(await getForClient(req.body.GUID,userId,restaurantId));
+        var responseForCientMenu=await getForClient(req.body.GUID,userId,restaurantId);
+        logger.info(responseForCientMenu);
+        res.json(responseForCientMenu);
       }
 }
 

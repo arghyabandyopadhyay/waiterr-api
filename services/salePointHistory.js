@@ -1,5 +1,6 @@
 const db = require("./db");
 const helper = require("../helper");
+const logger=require("../logger");
 
 async function get(salePointType, salePointName, outletId, isTerminated) {
   const result = await db.query(
@@ -67,7 +68,7 @@ async function approveOrders(forApproval,forAggregate,runningOrderId,guid,kotNum
 }
 
 async function Calculation(res,req, requestJson){
-  console.log(requestJson);
+  logger.info(requestJson);
   const parameterList=requestJson.ParameterList;
       if(parameterList!=null){
         if(parameterList.length==4){
@@ -79,6 +80,7 @@ async function Calculation(res,req, requestJson){
             else if(element.P_Key=='IsTerminated')isTerminated=element.P_Value;
           });
           const result=await get(salePointType,salePointName,outletId,isTerminated);
+          logger.info(result['body']);
           res.status(result['statusCode']).json(result['body']);
         }
         else if(parameterList.length==1){

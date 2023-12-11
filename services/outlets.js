@@ -1,5 +1,6 @@
 const db = require("./db");
 const helper = require("../helper");
+const logger=require("../logger");
 
 async function get(guid) {
     var statusCode, body;
@@ -53,7 +54,7 @@ async function update(id, outletName, outletSalePoint) {
 }
 
 async function remove(id) {
-  console.log(id);
+  logger.info(id);
   const result = await db.query(
     `DELETE FROM Outlets WHERE id=?`,[id]
   );

@@ -3,6 +3,7 @@ const router = express.Router();
 const customerDetail = require("../services/customerBank");
 const userDetails=require("../services/userDetails");
 const jwt = require('jsonwebtoken');
+const logger=require("../logger");
 const config=require('../config/config');
 const { result } = require("lodash");
 /* GET user detailss. */
@@ -31,20 +32,20 @@ const theToken = req.headers.authorization.split(' ')[1];
     else result["DataSource"]='UserDetails';
     res.status(200).json(result);
   } catch (err) {
-    console.log(err)
+    logger.error(err)
     res.status(500).json({message:'Internal server error'});
   }
 });
 
 /* POST user details */
 router.post("/", async function (req, res, next) {
-  console.log('requested post customerBank/');
+  logger.info('requested post customerBank/');
   if(
     !req.headers.authorization ||
     !req.headers.authorization.startsWith('Bearer') ||
     !req.headers.authorization.split(' ')[1]
   ){
-    console.log('Please provide the token')
+    logger.info('Please provide the token')
     return res.status(422).json({
         message: "Please provide the token",
     });
@@ -53,13 +54,13 @@ router.post("/", async function (req, res, next) {
 const theToken = req.headers.authorization.split(' ')[1];
   try {
     jwt.verify(theToken, config.secretCode);
-    console.log('jwt verified');
+    logger.info('jwt verified');
     var result=await customerDetail.create(req.body);
     result['body']["DataSource"]='CustomerBank';
-    console.log('response:', result);
+    logger.info('response:', result);
     res.status(result['statusCode']).json(result['body']);
   } catch (err) {
-    console.log('error occured:', err);
+    logger.info('error occured:', err);
     res.status(401).json({message:'Unauthorised Access'});
   }
 });

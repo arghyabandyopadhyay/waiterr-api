@@ -6,9 +6,10 @@ const commentForKotSuggestions=require("../services/commentForKotSuggestions");
 const runningOrder = require("../services/runningOrder");
 const maxTakeAway= require("../services/maxTakeAway");
 const favourites= require("../services/favourites");
+const logger = require('../logger');
 
 async function create(menuList,runningOrderId,runningOrderKotNumber,guid,userId) {
-  console.log(menuList, runningOrderId, runningOrderKotNumber, guid);
+  logger.info(menuList, runningOrderId, runningOrderKotNumber, guid);
   let message,statusCode;
   const pool = mysql.createPool(config.db);
 
@@ -31,7 +32,7 @@ async function create(menuList,runningOrderId,runningOrderKotNumber,guid,userId)
       } catch (error) {
         await connection.rollback();
         connection.release();
-        console.log(error);
+        logger.error(error);
         message = "Error in creating order";
         statusCode=403;
       }

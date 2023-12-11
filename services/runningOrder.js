@@ -1,5 +1,6 @@
 const db = require("./db");
 const helper = require("../helper");
+const logger= require("../logger");
 
 async function get(guid) {
   const result = await db.query(
@@ -163,14 +164,18 @@ async function runningOrdersCalculation(res,req,requestJson){
             if(element.P_Key=='WaiterId')waiterId=element.P_Value;
             else if(element.P_Key=='IncludePastOrder')includePastOrder=element.P_Value;
           });
-          res.json(await getForWaiterId(waiterId,includePastOrder));
+          var responseForWaiterId=await getForWaiterId(waiterId,includePastOrder);
+          logger.info(responseForWaiterId);
+          res.json(responseForWaiterId);
         }
         else if(parameterList.length==1){
           var runningOrderId;
           parameterList.forEach(element=>{
             if(element.P_Key=='RunningOrderId')runningOrderId=element.P_Value;
           })
-          res.json(await terminate(runningOrderId));
+          var responseForTerminate=await terminate(runningOrderId);
+          logger.info(responseForTerminate);
+          res.json(responseForTerminate);
         }
       }
 }
@@ -189,7 +194,9 @@ async function activeSalePointCalculation(res, req, requestJson){
       else if(element.P_Key=='SalePointName')salePointName=element.P_Value;
       else if(element.P_Key=='SalePointType')salePointType=element.P_Value;
     });
-    res.json(await getForAddOrder(req.body.GUID,outlet,salePointName,salePointType));
+    var responseForAddOrder=await getForAddOrder(req.body.GUID,outlet,salePointName,salePointType);
+    logger.info(responseForAddOrder);
+    res.json(responseForAddOrder);
   }
 }
 

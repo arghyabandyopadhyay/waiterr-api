@@ -5,6 +5,7 @@ const session = require('express-session');
 const cors = require('cors');
 const createError = require('http-errors');
 const errorHandler = require('errorhandler');
+const logger = require('./logger');
 
 const app = express();
 const port = 3000;
@@ -52,5 +53,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
-  console.log(`Waiterr api app listening at http://127.0.0.1:${port}`);
+  logger.info(`Waiterr api app listening at http://127.0.0.1:${port}`);
 });

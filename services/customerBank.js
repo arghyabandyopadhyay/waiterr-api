@@ -1,5 +1,6 @@
 const db = require("./db");
 const helper = require("../helper");
+const logger=require("../logger");
 
 async function get(id) {
   result = await db.query(
@@ -19,16 +20,16 @@ async function getUsingMobileNo(mobile) {
 async function create(customerDetail) {
   let message;
   let statusCode;
-  console.log('customerBank create args:',customerDetail);
+  logger.info('customerBank create args:',customerDetail);
   try{
     const result = await db.query(
       `INSERT INTO CustomerDetails (Name, MobileNumber) VALUES ("${customerDetail.name}", "${customerDetail.mobileNumber}");`
     );
-    console.log('query result',result);
+    logger.info('query result',result);
     message = "Error in creating customer details";
     statusCode=500;
     if (result.affectedRows) {
-      console.log('Rows affected:',result.affectedRows);
+      logger.info('Rows affected:',result.affectedRows);
       let customerDetail1=await getUsingMobileNo(customerDetail.mobileNumber);
       message = customerDetail1;
       statusCode=200;
@@ -65,7 +66,7 @@ async function update(id, customerDetail) {
 }
 
 async function updateGUIDForMobileNumber(userName, mobileNumber, id) {
-  console.log(userName, mobileNumber, id);
+  logger.info(userName, mobileNumber, id);
   let message,statusCode;
   try{
       const result = await db.query(

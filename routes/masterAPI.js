@@ -13,6 +13,7 @@ const orders=require("../services/orders");
 const taxClasses=require("../services/taxClasses");
 const config=require('../config/config');
 const outlets=require('../services/outlets');
+const logger=require("../logger");
 const { json } = require("body-parser");
 const { request } = require("express");
 
@@ -31,7 +32,7 @@ router.post("/", async function (req, res, next) {
 const theToken = req.headers.authorization.split(' ')[1];
   try {
     jwt.verify(theToken, config.secretCode);
-    console.log(req.body.RequestJSON);
+    logger.info(req.body.RequestJSON);
     const requestJson=JSON.parse(req.body.RequestJSON);
     if(requestJson.RequestType=="Running Orders"){
       await runningOrder.runningOrdersCalculation(res,req,requestJson);
@@ -74,6 +75,7 @@ const theToken = req.headers.authorization.split(' ')[1];
     }
     // res.json(await runningOrder.create(req.body));
   } catch (err) {
+    logger.error(err);
     res.status(401).json({message:'Unauthorised Access'});
   }
 });
